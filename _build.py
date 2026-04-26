@@ -1,0 +1,213 @@
+﻿import pathlib, textwrap
+
+html = """<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Wabaytech - Innovation IA-first depuis Tunis</title>
+<meta name="description" content="Wabaytech - Conseil, developpement et intelligence artificielle depuis Tunis."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+:root{--vt-cyan:#38bdf8;}
+.vector-section{position:relative;border-radius:28px;overflow:hidden;background:linear-gradient(135deg,#020a12 0%,#040d1a 50%,#020810 100%);border:1px solid rgba(56,189,248,.18);box-shadow:0 30px 80px rgba(0,0,0,.5);}
+[data-theme=light] .vector-section{background:linear-gradient(135deg,#e8f4fd 0%,#f0f8ff 100%);border-color:rgba(56,189,248,.3);}
+.vector-grid{display:grid;grid-template-columns:1.05fr 1fr;min-height:560px;}
+.vector-copy{padding:64px 56px;display:flex;flex-direction:column;justify-content:space-between;position:relative;z-index:2;}
+.vector-tag{font-family:JetBrains Mono,monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--vt-cyan);display:inline-flex;align-items:center;gap:10px;}
+.vector-tag::before{content:"";width:6px;height:6px;border-radius:999px;background:var(--vt-cyan);box-shadow:0 0 10px var(--vt-cyan);}
+.vector-logo-mark{margin:28px 0 32px;display:flex;align-items:center;gap:14px;}
+.vector-logo-icon{width:52px;height:52px;border-radius:14px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);display:flex;align-items:center;justify-content:center;}
+.vector-logo-name{font-family:JetBrains Mono,monospace;font-size:28px;font-weight:700;letter-spacing:.14em;color:#f4f4f2;}
+[data-theme=light] .vector-logo-name{color:#0a0a0b;}
+.vector-headline{font-family:Newsreader,serif;font-size:clamp(28px,3vw,38px);line-height:1.15;font-weight:300;letter-spacing:-.015em;margin:0 0 22px;color:#f4f4f2;max-width:22ch;}
+[data-theme=light] .vector-headline{color:#0a0a0b;}
+.vector-headline em{color:var(--vt-cyan);font-style:italic;}
+.vector-desc{color:rgba(244,244,242,.72);font-size:15.5px;line-height:1.65;max-width:44ch;}
+[data-theme=light] .vector-desc{color:rgba(10,10,11,.65);}
+.vector-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:28px;}
+.vector-tags span{font-family:JetBrains Mono,monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:999px;border:1px solid rgba(56,189,248,.28);color:rgba(244,244,242,.78);background:rgba(56,189,248,.06);}
+.vector-cta{margin-top:40px;align-self:flex-start;background:var(--vt-cyan)!important;color:#020a12!important;border:none;font-weight:600;}
+.vector-cta:hover{background:#7dd3fc!important;}
+.vector-visual{position:relative;background:radial-gradient(circle at 60% 40%,rgba(56,189,248,.15) 0%,transparent 55%);display:flex;align-items:center;justify-content:center;overflow:hidden;border-left:1px solid rgba(56,189,248,.1);}
+.vector-providers{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:32px;width:100%;max-width:320px;}
+.vp-card{padding:16px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px;transition:border-color .3s,transform .3s;}
+[data-theme=light] .vp-card{background:rgba(255,255,255,.7);border-color:rgba(56,189,248,.15);}
+.vp-card:hover{border-color:var(--vt-cyan);transform:translateY(-2px);}
+.vp-label{font-family:JetBrains Mono,monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(244,244,242,.5);}
+.vp-name{font-size:12px;font-weight:600;color:#f4f4f2;}
+[data-theme=light] .vp-name{color:#0a0a0b;}
+.vp-badge{font-family:JetBrains Mono,monospace;font-size:8px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:4px;align-self:flex-start;}
+.vp-badge-free{background:rgba(52,211,153,.2);color:#34d399;}
+.vp-badge-pro{background:rgba(56,189,248,.2);color:var(--vt-cyan);}
+.vt-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;width:56px;height:56px;border-radius:16px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(56,189,248,.2);}
+@media(max-width:900px){.vector-grid{grid-template-columns:1fr;}.vector-visual{min-height:360px;border-left:none;border-top:1px solid rgba(56,189,248,.1);}.vector-copy{padding:40px 32px;}}
+.nav-v{color:var(--vt-cyan)!important;}
+.theme-btn{position:fixed;bottom:24px;right:24px;z-index:100;width:44px;height:44px;border-radius:999px;background:var(--bg-elev);border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,.3);}
+</style>
+</head>
+<body>
+<nav class="nav" id="nav">
+  <a href="#top" class="nav-logo" onclick="go(event,'top')">
+    <span class="wb-logo-wrap"><img src="assets/wab-logo.png" alt="W" class="wb-logo-img"/></span>
+    <span class="nav-logo-text">Wabaytech</span>
+  </a>
+  <div class="nav-links">
+    <a href="#services" onclick="go(event,'services')">Services</a>
+    <a href="#apropos" onclick="go(event,'apropos')">A propos</a>
+    <a href="#proxeco" onclick="go(event,'proxeco')">PROXECO</a>
+    <a href="#vector" onclick="go(event,'vector')" class="nav-v">VECTOR</a>
+    <a href="#contact" onclick="go(event,'contact')">Contact</a>
+  </div>
+  <a href="https://vector-wabaytech.vercel.app" target="_blank" rel="noopener noreferrer" class="nav-cta">Essayer VECTOR <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></a>
+</nav>
+
+<section id="top" class="hero">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="hero-pill reveal"><span class="hero-pill-dot">*</span><span>Tunis - Conseil &amp; developpement IA-first</span></div>
+    <h1 class="hero-h1 reveal">L innovation qui propulse<br/><em>votre avenir.</em></h1>
+    <p class="hero-sub reveal">Chez Wabaytech, nous repoussons les frontieres du numerique. Conseil, developpement logiciel et intelligence artificielle au service de votre transformation.</p>
+    <div class="hero-actions reveal">
+      <a href="#services" class="btn btn-primary" onclick="go(event,'services')">Decouvrir nos services <svg class="btn-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></a>
+      <a href="#contact" class="btn btn-ghost" onclick="go(event,'contact')">Parler a un expert</a>
+    </div>
+    <div class="hero-footer">
+      <div class="hero-footer-item reveal"><div class="label">Localisation</div><div class="value">Tunis <span class="small">TN</span></div></div>
+      <div class="hero-footer-item reveal"><div class="label">Specialites</div><div class="value">IA - ERP - Web</div></div>
+      <div class="hero-footer-item reveal"><div class="label">Approche</div><div class="value">Sur mesure</div></div>
+      <div class="hero-footer-item reveal"><div class="label">Status</div><div class="value" style="display:flex;align-items:center;gap:10px;"><span style="width:8px;height:8px;border-radius:99px;background:var(--accent);box-shadow:0 0 12px var(--accent);"></span>Ouvert</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true"><div class="marquee-track">
+<span class="marquee-item">Innovation</span><span class="marquee-item">Intelligence Artificielle</span><span class="marquee-item">ERP</span><span class="marquee-item">Web</span><span class="marquee-item">Mobile</span><span class="marquee-item">Conseil</span><span class="marquee-item">Sur mesure</span><span class="marquee-item">Performance</span><span class="marquee-item">Innovation</span><span class="marquee-item">Intelligence Artificielle</span><span class="marquee-item">ERP</span><span class="marquee-item">Web</span><span class="marquee-item">Mobile</span><span class="marquee-item">Conseil</span><span class="marquee-item">Sur mesure</span><span class="marquee-item">Performance</span>
+</div></div>
+
+<section id="services" class="section"><div class="container">
+  <div class="section-head"><div><div class="eyebrow reveal">Nos services</div><h2 class="section-title reveal">Six expertises, <em>une exigence.</em></h2></div><p class="section-lede reveal">Du premier audit a la mise en production, nous couvrons toute la chaine de valeur.</p></div>
+  <div class="services-grid">
+    <div class="service-card reveal" onmousemove="spot(this,event)"><div class="service-num">01/06</div><div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg></div><h3 class="service-title">Applications Mobiles</h3><p class="service-body">iOS et Android sur mesure. Performance, securite, UX intuitive.</p><div class="service-arrow">En savoir plus <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></div></div>
+    <div class="service-card reveal" onmousemove="spot(this,event)"><div class="service-num">02/06</div><div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><h3 class="service-title">Sites Internet</h3><p class="service-body">Sites modernes, performants, optimises SEO. Design professionnel.</p><div class="service-arrow">En savoir plus <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></div></div>
+    <div class="service-card reveal" onmousemove="spot(this,event)"><div class="service-num">03/06</div><div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></div><h3 class="service-title">Solutions sur Mesure</h3><p class="service-body">Logiciels personnalises concus pour vos processus metiers specifiques.</p><div class="service-arrow">En savoir plus <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></div></div>
+    <div class="service-card reveal" onmousemove="spot(this,event)"><div class="service-num">04/06</div><div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="6" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></div><h3 class="service-title">ERP</h3><p class="service-body">Systemes ERP integres pour centraliser vos ressources et processus.</p><div class="service-arrow">En savoir plus <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></div></div>
+    <div class="service-card reveal" onmousemove="spot(this,event)"><div class="service-num">05/06</div><div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></div><h3 class="service-title">Intelligence Artificielle</h3><p class="service-body">ML, vision par ordinateur, analyse predictive. Vos donnees au service de la croissance.</p><div class="service-arrow">En savoir plus <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></div></div>
+    <div class="service-card reveal" onmousemove="spot(this,event)"><div class="service-num">06/06</div><div class="service-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-4 12.7V18h8v-3.3A7 7 0 0 0 12 2zM10 22h4M10 19h4"/></svg></div><h3 class="service-title">Conseil Informatique</h3><p class="service-body">Strategie, audit et optimisation de vos infrastructures. Performance et securite.</p><div class="service-arrow">En savoir plus <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></div></div>
+  </div>
+</div></section>
+
+<section id="apropos" class="section"><div class="container">
+  <div class="section-head"><div><div class="eyebrow reveal">A propos</div><h2 class="section-title reveal">Nous ne suivons pas l evolution. <em>Nous la creons.</em></h2></div></div>
+  <div class="about">
+    <div class="about-copy reveal"><p>Chez Wabaytech, nous repoussons les frontieres du numerique en offrant des solutions avant-gardistes qui transforment <strong>les defis en opportunites</strong>. Specialises dans le conseil et le developpement, nous integrons l IA au coeur de nos creations.</p><p>Nos equipes passionnees concoivent des solutions adaptees aux besoins specifiques de chaque entreprise, garantissant une transformation numerique <strong>fluide et efficace</strong>.</p></div>
+    <div class="values-stack">
+      <div class="value-row reveal"><div class="value-num">01</div><div><h3 class="value-name">Innovation</h3><p class="value-text">L innovation est au coeur de notre ADN. Nous investissons en R&amp;D pour anticiper les tendances et concevoir des solutions de pointe.</p></div></div>
+      <div class="value-row reveal"><div class="value-num">02</div><div><h3 class="value-name">Qualite</h3><p class="value-text">L excellence est notre standard. Solutions fiables, performantes, avec une attention minutieuse aux details.</p></div></div>
+      <div class="value-row reveal"><div class="value-num">03</div><div><h3 class="value-name">Engagement</h3><p class="value-text">Une relation de confiance, durable. Ecoute, reactivite et solutions adaptees a chaque client.</p></div></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="proxeco" class="section"><div class="container">
+  <div class="section-head"><div><div class="eyebrow reveal">Notre 1er projet</div><h2 class="section-title reveal">PROXECO - la marketplace qui <em>change la donne.</em></h2></div></div>
+  <div class="proxeco reveal"><div class="proxeco-grid">
+    <div class="proxeco-copy">
+      <div>
+        <div class="proxeco-tag">Live - marketplace</div>
+        <div class="proxeco-logo-block"><img src="assets/proxeco-logo.png" alt="PROXECO" style="height:52px;width:auto;"/></div>
+        <h3 class="proxeco-headline">Producteurs et consommateurs, <em>connectes directement.</em></h3>
+        <p class="proxeco-desc">PROXECO revolutionne l acces aux produits locaux. Qualite, transparence et tracabilite sans intermediaires.</p>
+        <div class="proxeco-tags"><span>Produits locaux</span><span>Artisanat</span><span>Tracabilite</span><span>Prix equitables</span></div>
+      </div>
+      <a href="#" class="btn btn-primary proxeco-cta">Decouvrir PROXECO <svg class="btn-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></a>
+    </div>
+    <div class="proxeco-visual">
+      <svg viewBox="0 0 400 400" width="100%" height="100%" style="position:absolute;inset:0;"><defs><pattern id="px-g" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="rgba(232,138,74,.10)" stroke-width="1"/></pattern></defs><rect width="400" height="400" fill="url(#px-g)"/><circle cx="200" cy="200" r="80" fill="none" stroke="rgba(74,122,63,.35)" stroke-width="1"/><circle cx="200" cy="200" r="130" fill="none" stroke="rgba(74,122,63,.22)" stroke-width="1" stroke-dasharray="4 6"/><line x1="200" y1="200" x2="200" y2="50" stroke="#4a7a3f" stroke-opacity=".2" stroke-width="1.5"/><circle cx="200" cy="50" r="6" fill="#4a7a3f"/><circle cx="200" cy="50" r="14" fill="#4a7a3f" opacity=".2"><animate attributeName="r" values="14;24;14" dur="2.4s" repeatCount="indefinite"/></circle><line x1="200" y1="200" x2="350" y2="200" stroke="#e88a4a" stroke-opacity=".2" stroke-width="1.5"/><circle cx="350" cy="200" r="6" fill="#e88a4a"/><circle cx="350" cy="200" r="14" fill="#e88a4a" opacity=".2"><animate attributeName="r" values="14;24;14" dur="2.9s" repeatCount="indefinite"/></circle><line x1="200" y1="200" x2="200" y2="350" stroke="#4a7a3f" stroke-opacity=".2" stroke-width="1.5"/><circle cx="200" cy="350" r="6" fill="#4a7a3f"/><circle cx="200" cy="350" r="14" fill="#4a7a3f" opacity=".2"><animate attributeName="r" values="14;24;14" dur="3.2s" repeatCount="indefinite"/></circle><line x1="200" y1="200" x2="50" y2="200" stroke="#e88a4a" stroke-opacity=".2" stroke-width="1.5"/><circle cx="50" cy="200" r="6" fill="#e88a4a"/><circle cx="50" cy="200" r="14" fill="#e88a4a" opacity=".2"><animate attributeName="r" values="14;24;14" dur="2.7s" repeatCount="indefinite"/></circle></svg>
+      <div style="position:relative;z-index:2;padding:32px 40px;background:rgba(255,255,255,.96);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);"><img src="assets/proxeco-logo.png" alt="PROXECO" style="height:64px;width:auto;"/></div>
+    </div>
+  </div></div>
+</div></section>
+
+<section id="vector" class="section"><div class="container">
+  <div class="section-head"><div>
+    <div class="eyebrow reveal" style="--accent:var(--vt-cyan);">Notre 2e projet</div>
+    <h2 class="section-title reveal" style="--accent:var(--vt-cyan);">VECTOR - l IA qui <em>forge votre contenu.</em></h2>
+  </div></div>
+  <div class="vector-section reveal"><div class="vector-grid">
+    <div class="vector-copy">
+      <div>
+        <div class="vector-tag">Live - SaaS IA - B2B</div>
+        <div class="vector-logo-mark">
+          <div class="vector-logo-icon"><svg viewBox="0 0 20 18" fill="none" width="28" height="28"><path d="M2 2L10 16L18 2" stroke="#38bdf8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="vector-logo-name">VECTOR</span>
+        </div>
+        <h3 class="vector-headline">Pipeline multi-agents pour un contenu B2B <em>a souverainete totale.</em></h3>
+        <p class="vector-desc">VECTOR orchestre 4 agents IA (Drafter, Auditor, Validator, Editor) pour forger et publier votre contenu sur 15+ reseaux. Groq gratuit, Claude, Gemini, GPT-4o integres. Zero configuration manuelle.</p>
+        <div class="vector-tags"><span>Groq Gratuit</span><span>Claude Opus 4</span><span>Gemini Flash</span><span>GPT-4o</span><span>15+ reseaux</span><span>Autopilot</span></div>
+      </div>
+      <a href="https://vector-wabaytech.vercel.app" target="_blank" rel="noopener noreferrer" class="btn vector-cta">Essayer VECTOR gratuitement <svg class="btn-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></a>
+    </div>
+    <div class="vector-visual">
+      <svg viewBox="0 0 400 400" width="100%" height="100%" style="position:absolute;inset:0;opacity:.65;"><defs><pattern id="vt-g" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="rgba(56,189,248,.07)" stroke-width="1"/></pattern></defs><rect width="400" height="400" fill="url(#vt-g)"/><circle cx="200" cy="200" r="80" fill="none" stroke="rgba(56,189,248,.22)" stroke-width="1"/><circle cx="200" cy="200" r="130" fill="none" stroke="rgba(56,189,248,.13)" stroke-width="1" stroke-dasharray="4 6"/><circle cx="200" cy="200" r="180" fill="none" stroke="rgba(56,189,248,.06)" stroke-width="1" stroke-dasharray="2 8"/><line x1="200" y1="200" x2="200" y2="80" stroke="#38bdf8" stroke-opacity=".25" stroke-width="1.5"/><circle cx="200" cy="80" r="7" fill="#38bdf8"/><circle cx="200" cy="80" r="14" fill="#38bdf8" opacity=".2"><animate attributeName="r" values="14;24;14" dur="2.4s" repeatCount="indefinite"/></circle><text x="200" y="68" text-anchor="middle" fill="rgba(56,189,248,.65)" font-family="monospace" font-size="9">DRAFTER</text><line x1="200" y1="200" x2="320" y2="200" stroke="#38bdf8" stroke-opacity=".25" stroke-width="1.5"/><circle cx="320" cy="200" r="7" fill="#38bdf8"/><circle cx="320" cy="200" r="14" fill="#38bdf8" opacity=".2"><animate attributeName="r" values="14;24;14" dur="2.9s" repeatCount="indefinite"/></circle><text x="345" y="197" fill="rgba(56,189,248,.65)" font-family="monospace" font-size="9">AUDIT</text><line x1="200" y1="200" x2="200" y2="320" stroke="#38bdf8" stroke-opacity=".25" stroke-width="1.5"/><circle cx="200" cy="320" r="7" fill="#38bdf8"/><circle cx="200" cy="320" r="14" fill="#38bdf8" opacity=".2"><animate attributeName="r" values="14;24;14" dur="3.2s" repeatCount="indefinite"/></circle><text x="200" y="345" text-anchor="middle" fill="rgba(56,189,248,.65)" font-family="monospace" font-size="9">EDITOR</text><line x1="200" y1="200" x2="80" y2="200" stroke="#38bdf8" stroke-opacity=".25" stroke-width="1.5"/><circle cx="80" cy="200" r="7" fill="#38bdf8"/><circle cx="80" cy="200" r="14" fill="#38bdf8" opacity=".2"><animate attributeName="r" values="14;24;14" dur="2.6s" repeatCount="indefinite"/></circle><text x="25" y="197" fill="rgba(56,189,248,.65)" font-family="monospace" font-size="9">VALID</text></svg>
+      <div class="vt-center"><svg viewBox="0 0 20 18" fill="none" width="32" height="32"><path d="M2 2L10 16L18 2" stroke="#38bdf8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="vector-providers">
+        <div class="vp-card"><div class="vp-label">Provider</div><div class="vp-name">Groq</div><span class="vp-badge vp-badge-free">Gratuit</span></div>
+        <div class="vp-card"><div class="vp-label">Provider</div><div class="vp-name">Gemini</div><span class="vp-badge vp-badge-pro">Google</span></div>
+        <div class="vp-card"><div class="vp-label">Provider</div><div class="vp-name">Claude</div><span class="vp-badge vp-badge-pro">Anthropic</span></div>
+        <div class="vp-card"><div class="vp-label">Provider</div><div class="vp-name">GPT-4o</div><span class="vp-badge vp-badge-pro">OpenAI</span></div>
+      </div>
+    </div>
+  </div></div>
+</div></section>
+
+<section class="section" style="padding:0;"><div class="stats">
+  <div class="stat reveal"><div class="stat-num">50<em>+</em></div><div class="stat-label">Projets livres</div></div>
+  <div class="stat reveal"><div class="stat-num">12</div><div class="stat-label">Industries servies</div></div>
+  <div class="stat reveal"><div class="stat-num">98<em>%</em></div><div class="stat-label">Satisfaction client</div></div>
+  <div class="stat reveal"><div class="stat-num">24<em>/7</em></div><div class="stat-label">Support continu</div></div>
+</div></section>
+
+<section id="contact" class="section"><div class="container">
+  <div class="section-head"><div><div class="eyebrow reveal">Contact</div><h2 class="section-title reveal">Parlons de <em>votre projet.</em></h2></div><p class="section-lede reveal">Une idee, un besoin ? Notre equipe repond sous 24h ouvrees.</p></div>
+  <div class="contact-grid">
+    <div class="contact-info reveal">
+      <a class="contact-item" href="mailto:contact@wabaytech.com"><div class="contact-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div><div><div class="contact-label">Email</div><div class="contact-value">contact@wabaytech.com</div></div></a>
+      <a class="contact-item" href="tel:+21653887723"><div class="contact-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></div><div><div class="contact-label">Telephone</div><div class="contact-value">+216 53 887 723</div></div></a>
+      <div class="contact-item"><div class="contact-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 0 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg></div><div><div class="contact-label">Adresse</div><div class="contact-value">24 Imm. Titanium, Jardins du Lac 2 - 1053 Tunis</div></div></div>
+    </div>
+    <form class="form reveal" id="cform"><div class="form-row"><div class="field"><label>Votre nom</label><input type="text" placeholder="Prenom Nom" required/></div><div class="field"><label>Entreprise</label><input type="text" placeholder="Votre entreprise"/></div></div><div class="field"><label>Email</label><input type="email" placeholder="vous@entreprise.com" required/></div><div class="field"><label>Message</label><textarea rows="5" placeholder="Parlez-nous de votre projet..." required></textarea></div><button type="submit" id="fbtn">Soumettre <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg></button></form>
+  </div>
+</div></section>
+
+<footer class="footer"><div class="footer-inner">
+  <div class="footer-top">
+    <div><div style="display:flex;align-items:center;gap:12px;"><span class="wb-logo-wrap"><img src="assets/wab-logo.png" alt="W" class="wb-logo-img"/></span><span style="font-family:Newsreader,serif;font-size:24px;letter-spacing:.04em;">Wabaytech</span></div><p class="footer-brand-tag">L innovation qui propulse votre avenir. Conseil, developpement et IA depuis Tunis.</p></div>
+    <div class="footer-col"><h4>Navigation</h4><ul><li><a href="#services" onclick="go(event,'services')">Services</a></li><li><a href="#apropos" onclick="go(event,'apropos')">A propos</a></li><li><a href="#proxeco" onclick="go(event,'proxeco')">PROXECO</a></li><li><a href="#vector" onclick="go(event,'vector')">VECTOR</a></li><li><a href="#contact" onclick="go(event,'contact')">Contact</a></li></ul></div>
+    <div class="footer-col"><h4>Produits</h4><ul><li><a href="#proxeco" onclick="go(event,'proxeco')">PROXECO</a></li><li><a href="https://vector-wabaytech.vercel.app" target="_blank" rel="noopener noreferrer">VECTOR - Plateforme IA</a></li></ul></div>
+    <div class="footer-col"><h4>Contact</h4><ul><li><a href="mailto:contact@wabaytech.com">contact@wabaytech.com</a></li><li><a href="tel:+21653887723">+216 53 887 723</a></li><li>Jardins du Lac 2, Tunis</li></ul></div>
+  </div>
+  <div class="footer-bottom"><span>c WABAYTECH 2026</span><span>WABAYTECH + VECTOR</span></div>
+</div></footer>
+
+<button class="theme-btn" id="tbtn" onclick="tgl()" title="Theme">&#x1F319;</button>
+
+<script>
+function go(e,id){if(e)e.preventDefault();var el=document.getElementById(id);if(el)window.scrollTo({top:el.offsetTop-70,behavior:'smooth'});}
+window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',scrollY>30);},{passive:true});
+var io=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');c.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');}
+function tgl(){var h=document.documentElement,d=h.getAttribute('data-theme')==='dark';h.setAttribute('data-theme',d?'light':'dark');document.getElementById('tbtn').innerHTML=d?'&#9728;':'&#x1F319;';}
+document.getElementById('cform').addEventListener('submit',function(e){e.preventDefault();var b=document.getElementById('fbtn');b.textContent='Envoye!';b.classList.add('sent');var s=this;setTimeout(function(){b.innerHTML='Soumettre <svg width=14 height=14 viewBox="0 0 14 14" fill=none stroke=currentColor stroke-width=1.5 stroke-linecap=round stroke-linejoin=round><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg>';b.classList.remove('sent');s.reset();},2400);});
+</script>
+</body>
+</html>"""
+
+import pathlib
+p = pathlib.Path(r"C:/Users/benal/Desktop/WABAYTECH/index.html")
+p.write_text(html, encoding="utf-8")
+print(f"OK: {p.stat().st_size} bytes")
