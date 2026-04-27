@@ -30,7 +30,9 @@
   --fg: #0a0a0b;
   --fg-mute: rgba(10,10,11,0.62);
   --fg-soft: rgba(10,10,11,0.42);
-  --accent-ink: #0a0a0b;
+  --accent:     #16a34a;        /* darker green for light mode — readable on white */
+  --accent-rgb: 22, 163, 74;
+  --accent-ink: #ffffff;
 }
 
 * { box-sizing: border-box; }
