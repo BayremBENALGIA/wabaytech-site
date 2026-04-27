@@ -9,8 +9,8 @@
   --fg: #f4f4f2;
   --fg-mute: rgba(244,244,242,0.62);
   --fg-soft: rgba(244,244,242,0.42);
-  --accent:     #2ecc71;           /* vibrant emerald green — RGB full support */
-  --accent-rgb: 46, 204, 113;      /* used in rgba() for opacity variants */
+  --accent:     #e8a320;           /* gold — RGB full support */
+  --accent-rgb: 232, 163, 32;      /* used in rgba() for opacity variants */
   --accent-ink: #0a0a0b;
   --px-green: #4a7a3f;
   --px-green-deep: #2f5128;
@@ -30,8 +30,8 @@
   --fg: #0a0a0b;
   --fg-mute: rgba(10,10,11,0.62);
   --fg-soft: rgba(10,10,11,0.42);
-  --accent:     #16a34a;        /* darker green for light mode — readable on white */
-  --accent-rgb: 22, 163, 74;
+  --accent:     #b87c0b;        /* dark gold for light mode — readable on white */
+  --accent-rgb: 184, 124, 11;
   --accent-ink: #ffffff;
 }
 
