@@ -19,7 +19,7 @@
 <meta name="twitter:description"content="Conseil, développement logiciel et IA depuis Tunis."/>
 
 <!-- Favicon inline SVG -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230a0a0b'/><path d='M6 8L16 24L26 8' stroke='%23a8d986' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230a0a0b'/><path d='M6 8L16 24L26 8' stroke='%232ecc71' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>"/>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -650,10 +650,10 @@
 
 <!-- ── Stats ────────────────────────────────────────────────────── -->
 <section class="section" style="padding:0;"><div class="stats">
-  <div class="stat reveal"><div class="stat-num">50<em>+</em></div><div class="stat-label">Projets livrés</div></div>
-  <div class="stat reveal"><div class="stat-num">12</div><div class="stat-label">Industries servies</div></div>
-  <div class="stat reveal"><div class="stat-num">98<em>%</em></div><div class="stat-label">Satisfaction client</div></div>
-  <div class="stat reveal"><div class="stat-num">24<em>/7</em></div><div class="stat-label">Support continu</div></div>
+  <div class="stat reveal"><div class="stat-num"><span class="stat-count" data-target="50">0</span><em>+</em></div><div class="stat-label">Projets livrés</div></div>
+  <div class="stat reveal"><div class="stat-num"><span class="stat-count" data-target="12">0</span></div><div class="stat-label">Industries servies</div></div>
+  <div class="stat reveal"><div class="stat-num"><span class="stat-count" data-target="98">0</span><em>%</em></div><div class="stat-label">Satisfaction client</div></div>
+  <div class="stat reveal"><div class="stat-num"><span class="stat-count" data-target="24">0</span><em>/7</em></div><div class="stat-label">Support continu</div></div>
 </div></section>
 
 <!-- ── Contact ──────────────────────────────────────────────────── -->
@@ -753,6 +753,22 @@
 <script>
 // Smooth scroll
 function go(e,id){if(e)e.preventDefault();var el=document.getElementById(id);if(el)window.scrollTo({top:el.offsetTop-70,behavior:'smooth'});}
+
+// ── Stat counter animation ─────────────────────────────────────
+function animCount(el){
+  var target=parseInt(el.dataset.target,10),duration=1400,start=Date.now();
+  (function tick(){
+    var p=Math.min((Date.now()-start)/duration,1),eased=1-Math.pow(1-p,3);
+    el.textContent=Math.floor(eased*target);
+    if(p<1)requestAnimationFrame(tick);else el.textContent=target;
+  })();
+}
+var statObs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){e.target.querySelectorAll('.stat-count').forEach(animCount);statObs.unobserve(e.target);}
+  });
+},{threshold:0.4});
+document.querySelectorAll('.stats').forEach(function(s){statObs.observe(s);});
 
 // Nav scroll effect
 window.addEventListener('scroll',function(){

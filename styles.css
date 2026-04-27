@@ -545,3 +545,77 @@ img, svg { display: block; max-width: 100%; }
 
 /* selection */
 ::selection { background: var(--accent); color: var(--accent-ink); }
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES — elements with hardcoded dark values
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Nav scrolled */
+[data-theme="light"] .nav.scrolled {
+  background: rgba(246, 245, 241, 0.92);
+}
+
+/* Mobile nav dropdown */
+[data-theme="light"] .nav-links {
+  background: rgba(246, 245, 241, 0.97);
+  border-bottom-color: var(--line);
+}
+
+/* Hero pill */
+[data-theme="light"] .hero-pill {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: var(--line-strong);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* Hero glow — reduce intensity on white bg */
+[data-theme="light"] .hero-glow {
+  opacity: 0.20;
+}
+
+/* Service icon */
+[data-theme="light"] .service-icon {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: var(--line-strong);
+}
+
+/* Service card hover */
+[data-theme="light"] .service-card { background: var(--bg-card); }
+
+/* Stats bar */
+[data-theme="light"] .stats { background: var(--bg-elev); }
+[data-theme="light"] .stat  { border-right-color: var(--line); }
+
+/* Contact icon bg */
+[data-theme="light"] .contact-icon { background: var(--bg-elev); border-color: var(--line); }
+
+/* Marquee */
+[data-theme="light"] .marquee { background: var(--bg-elev); }
+
+/* ── Stat counter animation ───────────────────────────────────── */
+.stat-count { display: inline; }
+
+/* ── Enhanced value rows ─────────────────────────────────────── */
+.value-row:hover .value-num { color: var(--accent); }
+.value-row:hover .value-name { color: var(--fg); }
+
+/* ── Form enhancements ───────────────────────────────────────── */
+[data-theme="light"] .field input,
+[data-theme="light"] .field textarea {
+  background: var(--bg-elev);
+  border-color: var(--line-strong);
+}
+[data-theme="light"] .field input:focus,
+[data-theme="light"] .field textarea:focus {
+  background: #ffffff;
+}
+
+/* ── Contact item light mode ─────────────────────────────────── */
+[data-theme="light"] .contact-item {
+  background: var(--bg-elev);
+}
+
+/* ── Footer light mode ───────────────────────────────────────── */
+[data-theme="light"] .footer { background: var(--bg-elev); }
+[data-theme="light"] .footer-social a { background: var(--bg-card); }
