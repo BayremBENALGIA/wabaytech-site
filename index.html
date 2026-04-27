@@ -141,7 +141,7 @@
   .nav-hamburger { display: flex; }
   .nav-links {
     display: none; position: fixed; top: 65px; inset-x: 0;
-    background: color-mix(in oklab, var(--bg) 96%, transparent);
+    background: rgba(10, 10, 11, 0.96);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--line);
     flex-direction: column; padding: 24px var(--pad); gap: 20px;
@@ -161,8 +161,8 @@
   font: inherit; cursor: pointer; color: inherit;
 }
 .service-card.expanded {
-  background: rgba(var(--accent-rgb, 168,217,134), .05);
-  border-color: rgba(var(--accent-rgb, 168,217,134), .30);
+  background: rgba(var(--accent-rgb, 46,204,113), .05);
+  border-color: rgba(var(--accent-rgb, 46,204,113), .30);
   z-index: 2;
 }
 .service-card.expanded .service-icon {
@@ -234,7 +234,7 @@
   text-transform: uppercase; letter-spacing: .1em;
   border: none; cursor: pointer;
   transition: transform .2s, filter .2s, box-shadow .2s;
-  box-shadow: 0 4px 20px color-mix(in oklab, var(--accent) 35%, transparent);
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb, 46,204,113), 0.35);
 }
 .svc-next:hover  { transform: translateY(-1px); filter: brightness(1.06); }
 .svc-next:active { transform: scale(.97); }
