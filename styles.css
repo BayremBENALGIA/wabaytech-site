@@ -9,9 +9,22 @@
   --fg: #f4f4f2;
   --fg-mute: rgba(244,244,242,0.62);
   --fg-soft: rgba(244,244,242,0.42);
-  --accent:     #e8a320;           /* gold — RGB full support */
-  --accent-rgb: 232, 163, 32;      /* used in rgba() for opacity variants */
-  --accent-ink: #0a0a0b;
+  --accent:       #D4AF37;              /* Metallic Gold — classic */
+  --accent-rgb:   212, 175, 55;         /* rgba() usage */
+  --accent-ink:   #0a0a0b;
+  --gold-light:   #F5E070;              /* highlight */
+  --gold-mid:     #D4AF37;              /* base */
+  --gold-dark:    #A8860C;              /* shadow */
+  --gold-shine: linear-gradient(
+    105deg,
+    #A8860C 0%,
+    #D4AF37 22%,
+    #F5E070 38%,
+    #FFF4B0 50%,
+    #F5E070 62%,
+    #D4AF37 78%,
+    #A8860C 100%
+  );
   --px-green: #4a7a3f;
   --px-green-deep: #2f5128;
   --px-orange: #e88a4a;
@@ -30,9 +43,19 @@
   --fg: #0a0a0b;
   --fg-mute: rgba(10,10,11,0.62);
   --fg-soft: rgba(10,10,11,0.42);
-  --accent:     #b87c0b;        /* dark gold for light mode — readable on white */
-  --accent-rgb: 184, 124, 11;
+  --accent:     #9A7209;        /* dark metallic gold — light mode */
+  --accent-rgb: 154, 114, 9;
   --accent-ink: #ffffff;
+  --gold-shine: linear-gradient(
+    105deg,
+    #7A5A06 0%,
+    #C49820 25%,
+    #E8D060 40%,
+    #C49820 50%,
+    #9A7209 65%,
+    #C49820 80%,
+    #7A5A06 100%
+  );
 }
 
 * { box-sizing: border-box; }
@@ -68,8 +91,8 @@ img, svg { display: block; max-width: 100%; }
 }
 .nav.scrolled {
   background: rgba(10, 10, 11, 0.82);
-  backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
   border-bottom-color: var(--line);
 }
 .nav-logo { display: flex; align-items: center; gap: 12px; }
@@ -140,8 +163,8 @@ img, svg { display: block; max-width: 100%; }
     linear-gradient(var(--line) 1px, transparent 1px),
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: 80px 80px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
   -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
   pointer-events: none;
 }
 .hero-glow {
@@ -619,3 +642,145 @@ img, svg { display: block; max-width: 100%; }
 /* ── Footer light mode ───────────────────────────────────────── */
 [data-theme="light"] .footer { background: var(--bg-elev); }
 [data-theme="light"] .footer-social a { background: var(--bg-card); }
+
+/* ═══════════════════════════════════════════════════════════════
+   GOLD METALLIC EFFECT
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Shimmer animation — moves the bright spot across */
+@keyframes gold-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes gold-pulse-ring {
+  0%   { transform: scale(.85); opacity: .55; }
+  100% { transform: scale(1.65); opacity: 0;  }
+}
+
+/* ── Gold utility class ───────────────── */
+.gold-bg {
+  background: var(--gold-shine);
+  background-size: 200% auto;
+  animation: gold-shimmer 3.5s linear infinite;
+  color: #0a0a0b;
+}
+
+/* ── Nav CTA button — metallic gold ──── */
+.nav-cta {
+  background: var(--gold-shine) !important;
+  background-size: 200% auto !important;
+  animation: gold-shimmer 3.5s linear infinite;
+  color: #0a0a0b !important;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(212,175,55,.35),
+              0 1px 0 rgba(255,240,120,.5) inset;
+}
+.nav-cta:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 20px rgba(212,175,55,.5),
+              0 1px 0 rgba(255,240,120,.6) inset;
+}
+
+/* ── Hero pill dot — gold shimmer ────── */
+.hero-pill-dot {
+  background: var(--gold-shine);
+  background-size: 200% auto;
+  animation: gold-shimmer 3.5s linear infinite;
+  color: #0a0a0b;
+}
+.hero-pill-dot::before {
+  background: var(--gold-mid);
+  animation: gold-pulse-ring 2.2s ease-out infinite;
+}
+
+/* ── Svc-next button — metallic gold ── */
+.svc-next {
+  background: var(--gold-shine) !important;
+  background-size: 200% auto !important;
+  animation: gold-shimmer 3.5s linear infinite;
+  color: #0a0a0b !important;
+  box-shadow: 0 4px 18px rgba(212,175,55,.40),
+              0 1px 0 rgba(255,240,120,.4) inset;
+}
+.svc-next:hover { filter: brightness(1.08); }
+
+/* ── Form submit button — gold ─────────── */
+.form button {
+  background: var(--gold-shine);
+  background-size: 200% auto;
+  animation: gold-shimmer 3.5s linear infinite;
+  color: #0a0a0b;
+  box-shadow: 0 2px 12px rgba(212,175,55,.3);
+}
+.form button:hover { filter: brightness(1.06); }
+
+/* ── Logo wrap — gold border glow ─────── */
+.wb-logo-wrap {
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 0 1px rgba(212,175,55,.15),
+              0 0 22px rgba(212,175,55,.22),
+              inset 0 1px 0 rgba(255,240,120,.12);
+}
+.nav-logo:hover .wb-logo-wrap {
+  border-color: rgba(212,175,55,.8);
+  box-shadow: 0 0 0 1px rgba(212,175,55,.25),
+              0 0 35px rgba(212,175,55,.40),
+              inset 0 1px 0 rgba(255,240,120,.2);
+}
+
+/* ── Eyebrow dot — gold ──────────────── */
+.eyebrow::before { background: var(--gold-mid); }
+
+/* ── Section title em — gold shimmer ─── */
+.section-title em {
+  background: var(--gold-shine);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gold-shimmer 4s linear infinite;
+}
+
+/* ── Hero h1 em — gold shimmer ──────── */
+.hero-h1 em {
+  background: var(--gold-shine);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gold-shimmer 4s linear infinite;
+}
+
+/* ── Marquee separator dots ─────────── */
+.marquee-item::after { color: var(--gold-mid); }
+
+/* ── Contact hover ───────────────────── */
+.contact-item:hover { border-color: var(--gold-mid); }
+.contact-icon { color: var(--gold-mid); }
+
+/* ── Selection ───────────────────────── */
+::selection { background: var(--gold-mid); color: #0a0a0b; }
+
+/* ── Light mode overrides for gold ─── */
+[data-theme="light"] .nav-cta {
+  box-shadow: 0 2px 12px rgba(154,114,9,.3);
+}
+[data-theme="light"] .section-title em,
+[data-theme="light"] .hero-h1 em {
+  background: linear-gradient(
+    105deg,
+    #7A5A06 0%,
+    #C49820 30%,
+    #7A5A06 60%,
+    #C49820 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gold-shimmer 4s linear infinite;
+}
+[data-theme="light"] .form button.sent {
+  background: var(--gold-shine);
+  color: #0a0a0b;
+}
