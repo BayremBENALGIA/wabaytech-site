@@ -51,6 +51,13 @@ img{max-width:100%;display:block}
 button{font-family:inherit}
 ::selection{background:var(--cyan);color:#02060c}
 
+/* ---- Keyboard focus — visible neon ring, mouse users unaffected ---- */
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+.btn:focus-visible,.nav-cta:focus-visible{outline-offset:4px;box-shadow:0 0 0 4px rgba(25,227,255,.25)}
+a:focus-visible{outline-offset:4px}
+/* remove the legacy outline only when focus-visible is supported */
+:focus:not(:focus-visible){outline:none}
+
 /* ---- Fixed background layers ----------------------------- */
 #bgfx{position:fixed;inset:0;z-index:-3;pointer-events:none;
   background:
@@ -153,7 +160,8 @@ button{font-family:inherit}
 .nav-cta:hover{transform:translateY(-1px);box-shadow:0 0 34px rgba(25,227,255,.6)}
 .nav-cta svg{transition:transform .25s}
 .nav-cta:hover svg{transform:translateX(3px)}
-.nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border:0;background:transparent}
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;cursor:pointer;
+  width:44px;height:44px;padding:11px;border:0;background:transparent;border-radius:8px}
 .nav-hamburger span{display:block;width:22px;height:2px;background:var(--cyan);box-shadow:0 0 6px var(--cyan);transition:.3s}
 
 /* ---- Hero ------------------------------------------------ */
@@ -166,15 +174,24 @@ button{font-family:inherit}
 .hero-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--lime);
   box-shadow:0 0 10px var(--lime);animation:pulse 1.8s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.7)}}
-.hero h1{font-family:var(--display);font-weight:800;text-transform:uppercase;
+.hero h1{position:relative;font-family:var(--display);font-weight:800;text-transform:uppercase;
   font-size:clamp(38px,8vw,108px);line-height:.98;letter-spacing:-.02em;color:#fff;margin-bottom:26px}
+/* tasteful scanline shimmer sweeping diagonally across the headline */
+.hero h1::after{content:"";position:absolute;inset:-6% -2%;pointer-events:none;mix-blend-mode:screen;opacity:.5;
+  background:linear-gradient(115deg,transparent 38%,rgba(160,200,255,.10) 47%,rgba(255,255,255,.16) 50%,rgba(160,200,255,.10) 53%,transparent 62%);
+  background-size:260% 100%;background-position:200% 0;
+  animation:heroSheen 6.5s cubic-bezier(.5,0,.5,1) infinite;will-change:background-position}
+@keyframes heroSheen{0%{background-position:200% 0}60%,100%{background-position:-120% 0}}
 .hero h1 .accent{position:relative;color:var(--cyan);text-shadow:0 0 26px var(--cyan-soft)}
 .hero-sub{font-size:clamp(15px,1.7vw,19px);color:var(--fg-mute);max-width:60ch;margin-bottom:38px;font-family:var(--sans)}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:60px}
 .hero-hud{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
   border:1px solid var(--line-strong);border-radius:12px;overflow:hidden;
   background:var(--line-strong);max-width:760px}
-.hero-hud .cell{background:rgba(8,12,22,.7);padding:18px 20px;backdrop-filter:blur(4px)}
+.hero-hud .cell{background:rgba(8,12,22,.7);padding:18px 20px;backdrop-filter:blur(4px);position:relative;transition:background .3s}
+.hero-hud .cell::after{content:"";position:absolute;left:0;top:0;width:0;height:2px;background:linear-gradient(90deg,var(--cyan),transparent);box-shadow:0 0 8px var(--cyan);transition:width .35s cubic-bezier(.2,.7,.2,1)}
+.hero-hud .cell:hover{background:rgba(25,227,255,.05)}
+.hero-hud .cell:hover::after{width:100%}
 .hero-hud .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-soft)}
 .hero-hud .v{font-family:var(--mono);font-size:14px;color:#fff;margin-top:7px;display:flex;align-items:center;gap:9px}
 .hero-hud .v .live{width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
@@ -223,9 +240,17 @@ button{font-family:inherit}
 .svc::before{content:"";position:absolute;inset:0;
   background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),color-mix(in srgb,var(--sc) 16%,transparent),transparent 45%);
   opacity:0;transition:opacity .35s;pointer-events:none}
+/* gradient accent line that ignites across the card top on hover */
+.svc::after{content:"";position:absolute;left:0;top:0;height:1px;width:100%;transform:scaleX(0);transform-origin:left;
+  background:linear-gradient(90deg,var(--sc),transparent 85%);box-shadow:0 0 12px var(--sc);
+  opacity:0;transition:transform .45s cubic-bezier(.2,.7,.2,1),opacity .3s;pointer-events:none}
 .svc:hover{transform:translateY(-6px);border-color:color-mix(in srgb,var(--sc) 55%,transparent);
   box-shadow:0 18px 50px rgba(0,0,0,.5),0 0 0 1px color-mix(in srgb,var(--sc) 30%,transparent)}
 .svc:hover::before{opacity:1}
+.svc:hover::after{opacity:1;transform:scaleX(1)}
+.svc:hover .svc-icon{box-shadow:inset 0 0 18px color-mix(in srgb,var(--sc) 22%,transparent),0 0 22px color-mix(in srgb,var(--sc) 28%,transparent)}
+.svc-icon{transition:box-shadow .3s,transform .3s}
+.svc:hover .svc-icon{transform:translateY(-2px)}
 .svc-num{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--fg-soft)}
 .svc-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;
   margin:18px 0 18px;color:var(--sc);border:1px solid color-mix(in srgb,var(--sc) 35%,transparent);
@@ -263,7 +288,10 @@ button{font-family:inherit}
 
 /* ---- Project panels (PROXECO / VECTOR) ------------------- */
 .panel{position:relative;border-radius:24px;overflow:hidden;border:1px solid var(--line-strong);
-  background:linear-gradient(135deg,#06101e,#040912 55%,#06101e);box-shadow:0 30px 90px rgba(0,0,0,.55)}
+  background:linear-gradient(135deg,#06101e,#040912 55%,#06101e);box-shadow:0 30px 90px rgba(0,0,0,.55);
+  transition:transform .4s cubic-bezier(.2,.7,.2,1),border-color .4s,box-shadow .4s}
+.panel:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--accent) 38%,transparent);
+  box-shadow:0 36px 100px rgba(0,0,0,.6),0 0 0 1px color-mix(in srgb,var(--accent) 22%,transparent)}
 .panel.magenta{--accent:var(--magenta)}
 .panel-grid{display:grid;grid-template-columns:1.05fr .95fr;min-height:520px}
 .panel-copy{padding:clamp(34px,5vw,62px);display:flex;flex-direction:column;justify-content:space-between;position:relative;z-index:2}
@@ -349,6 +377,12 @@ button{font-family:inherit}
 /* ---- Reveal animation ------------------------------------ */
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
 .reveal.in{opacity:1;transform:none}
+/* staggered cadence — grouped grids reveal in a gentle wave rather than all at once */
+.services-grid .reveal:nth-child(2),.teaser-grid .reveal:nth-child(2),.process .reveal:nth-child(2),.values .reveal:nth-child(2){transition-delay:.08s}
+.services-grid .reveal:nth-child(3),.teaser-grid .reveal:nth-child(3),.process .reveal:nth-child(3),.values .reveal:nth-child(3){transition-delay:.16s}
+.services-grid .reveal:nth-child(4),.process .reveal:nth-child(4){transition-delay:.24s}
+.services-grid .reveal:nth-child(5){transition-delay:.32s}
+.services-grid .reveal:nth-child(6){transition-delay:.40s}
 
 /* ---- Responsive ------------------------------------------ */
 @media(max-width:960px){
@@ -364,6 +398,8 @@ button{font-family:inherit}
     padding:26px var(--pad);background:rgba(4,6,12,.97);backdrop-filter:blur(16px);
     border-bottom:1px solid var(--line-strong);transform:translateY(-130%);transition:transform .35s;z-index:55}
   .nav-links.open{transform:none}
+  /* generous tap targets on the mobile menu (>=44px) */
+  .nav-links a{padding:11px 0;font-size:13px;width:100%}
   .nav-cta{display:none}
   .hero-hud{grid-template-columns:1fr 1fr}
   .stats{grid-template-columns:1fr 1fr}
@@ -381,6 +417,9 @@ button{font-family:inherit}
   *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   .gridfloor::before,.marquee-track{animation:none}
   .reveal{opacity:1;transform:none}
+  /* hide new decorative motion so nothing freezes mid-sweep */
+  .hero h1::after,.process::after{display:none}
+  .reveal[class]{transition-delay:0s!important}
 }
 
 /* ============================================================
@@ -395,8 +434,13 @@ button{font-family:inherit}
 /* product teaser cards */
 .teaser-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .teaser{position:relative;padding:32px 28px;border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line-strong);overflow:hidden;transition:transform .3s,border-color .3s,box-shadow .3s;--sc:var(--cyan);display:flex;flex-direction:column}
-.teaser::before{content:"";position:absolute;inset:0;background:radial-gradient(380px circle at 50% 0%,color-mix(in srgb,var(--sc) 14%,transparent),transparent 50%);opacity:.6;pointer-events:none}
+.teaser::before{content:"";position:absolute;inset:0;background:radial-gradient(380px circle at 50% 0%,color-mix(in srgb,var(--sc) 14%,transparent),transparent 50%);opacity:.6;pointer-events:none;transition:opacity .35s}
+.teaser::after{content:"";position:absolute;left:0;top:0;height:1px;width:100%;transform:scaleX(0);transform-origin:left;
+  background:linear-gradient(90deg,var(--sc),transparent 85%);box-shadow:0 0 12px var(--sc);
+  opacity:0;transition:transform .45s cubic-bezier(.2,.7,.2,1),opacity .3s;pointer-events:none}
 .teaser:hover{transform:translateY(-6px);border-color:color-mix(in srgb,var(--sc) 55%,transparent);box-shadow:0 18px 50px rgba(0,0,0,.5),0 0 0 1px color-mix(in srgb,var(--sc) 30%,transparent)}
+.teaser:hover::before{opacity:1}
+.teaser:hover::after{opacity:1;transform:scaleX(1)}
 .teaser .kicker{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--sc);position:relative}
 .teaser h3{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:21px;color:#fff;margin:14px 0 10px;letter-spacing:.02em;position:relative}
 .teaser p{color:var(--fg-mute);font-size:14px;margin-bottom:20px;flex:1;position:relative}
@@ -410,11 +454,30 @@ button{font-family:inherit}
 .feat-list li::before{content:"";position:absolute;left:0;top:6px;width:9px;height:9px;border:1.5px solid var(--accent);border-radius:2px;transform:rotate(45deg);box-shadow:0 0 8px color-mix(in srgb,var(--accent) 60%,transparent)}
 
 /* process timeline */
-.process{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.step{position:relative;padding:30px 24px;border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line-strong);transition:transform .3s,border-color .3s,box-shadow .3s}
+.process{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;position:relative}
+/* glowing connector rail behind the row of steps (desktop) */
+.process::before{content:"";position:absolute;left:24px;right:24px;top:114px;height:1px;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--cyan) 38%,transparent) 10%,color-mix(in srgb,var(--violet) 34%,transparent) 50%,color-mix(in srgb,var(--magenta) 38%,transparent) 90%,transparent);
+  pointer-events:none;z-index:0}
+/* animated light pulse travelling along the rail */
+.process::after{content:"";position:absolute;left:24px;top:114px;height:1px;width:120px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  box-shadow:0 0 14px var(--cyan);opacity:.9;pointer-events:none;z-index:1;
+  animation:railpulse 5.5s cubic-bezier(.5,0,.5,1) infinite;will-change:transform}
+@keyframes railpulse{0%{transform:translateX(0);opacity:0}8%{opacity:.9}92%{opacity:.9}100%{transform:translateX(calc(100% * 3 + 48px));opacity:0}}
+.step{position:relative;z-index:2;padding:30px 24px;border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line-strong);transition:transform .3s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .3s}
+.step::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--cyan) 45%,transparent),0 0 26px color-mix(in srgb,var(--cyan) 22%,transparent) inset;transition:opacity .3s}
 .step:hover{transform:translateY(-5px);border-color:color-mix(in srgb,var(--cyan) 50%,transparent);box-shadow:0 16px 44px rgba(0,0,0,.5)}
+.step:hover::after{opacity:1}
 .step .wk{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
-.step .no{font-family:var(--display);font-weight:800;font-size:36px;color:transparent;-webkit-text-stroke:1.5px color-mix(in srgb,var(--cyan) 55%,transparent);line-height:1;margin:8px 0 14px}
+/* numbered node sits ON the connector rail */
+.step .no{position:relative;font-family:var(--display);font-weight:800;font-size:34px;color:transparent;-webkit-text-stroke:1.5px color-mix(in srgb,var(--cyan) 55%,transparent);line-height:1;margin:8px 0 14px;
+  width:62px;height:62px;display:flex;align-items:center;justify-content:center;border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--cyan) 30%,transparent);
+  background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--cyan) 14%,transparent),rgba(5,9,18,.85));
+  box-shadow:0 0 0 6px var(--bg),0 8px 22px rgba(0,0,0,.5);transition:border-color .3s,box-shadow .3s}
+.step:hover .no{border-color:color-mix(in srgb,var(--cyan) 70%,transparent);box-shadow:0 0 0 6px var(--bg),0 0 24px color-mix(in srgb,var(--cyan) 40%,transparent)}
 .step h3{font-family:var(--display);font-weight:600;text-transform:uppercase;font-size:16px;color:#fff;margin-bottom:10px;letter-spacing:.02em}
 .step p{color:var(--fg-mute);font-size:13.5px}
 
@@ -433,7 +496,9 @@ button{font-family:inherit}
 .eco span{font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:var(--fg-mute);padding:11px 18px;border:1px solid var(--line-strong);border-radius:999px;background:rgba(8,12,22,.5);transition:.25s}
 .eco span:hover{color:#fff;border-color:var(--cyan);box-shadow:0 0 18px rgba(25,227,255,.22);transform:translateY(-2px)}
 
-@media(max-width:960px){.teaser-grid{grid-template-columns:1fr}.process{grid-template-columns:1fr 1fr}}
+@media(max-width:960px){.teaser-grid{grid-template-columns:1fr}.process{grid-template-columns:1fr 1fr}
+  /* horizontal rail only makes sense on a single row — hide it on wrapped grids */
+  .process::before,.process::after{display:none}}
 @media(max-width:560px){.process{grid-template-columns:1fr}}
 
 /* ---- Small-screen polish -------------------------------- */
