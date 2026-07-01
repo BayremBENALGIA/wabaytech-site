@@ -38,7 +38,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="styles.css"/>
+<!-- version query = cache-buster: heuristic caches (no-Cache-Control proxies,
+     some browsers) can otherwise serve a stale stylesheet after a deploy -->
+<link rel="stylesheet" href="styles.css?v=fullmagic-3d-1"/>
 <!-- No-JS safety net: the .reveal system (and the GSAP layer) both rely on
      JavaScript to become visible. If scripting is off, force every animated
      element into its visible resting state so all content is readable. -->
@@ -124,6 +126,15 @@
       <span class="sep" aria-hidden="true"></span>
       <span>SARL Tunis · <strong>D-U-N-S</strong> vérifié</span>
     </div>
+  </div>
+  <!-- Interactive 3D (Spline robot) — right half of the hero, cursor-tracked.
+       Ported from the React SplineScene/Spotlight reference to the vanilla
+       @splinetool/runtime. Lazy-loaded post-load on wide fine-pointer screens
+       with WebGL only (see the module script at the end of <body>); hidden by
+       default so no-JS / mobile / reduced-motion pay ZERO cost. -->
+  <div class="hero-spotlight" aria-hidden="true"></div>
+  <div class="hero-3d" id="hero3d" aria-hidden="true">
+    <canvas id="spline3d"></canvas>
   </div>
 </section>
 
@@ -956,6 +967,52 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   addEventListener('scrollend', failsafeSweep);           // fires after a jump/settle in modern browsers
   ScrollTrigger.addEventListener && ScrollTrigger.addEventListener('scrollEnd', failsafeSweep);
   window.addEventListener('load', function(){ setTimeout(failsafeSweep, 400); });
+})();
+</script>
+
+<!-- ── Interactive 3D hero robot (Spline) — lazy, desktop-only, fail-safe ──
+     Vanilla port of the React SplineScene reference (@splinetool/runtime).
+     Loads AFTER window load + idle so it never competes with first paint;
+     only on wide fine-pointer screens with WebGL and motion allowed. Any
+     failure (CDN, WebGL, scene) silently keeps the plasma background. -->
+<script type="module">
+(async () => {
+  try {
+    const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const WIDE   = matchMedia('(min-width: 900px)').matches;
+    const FINE   = matchMedia('(pointer: fine)').matches;
+    const host   = document.getElementById('hero3d');
+    const canvas = document.getElementById('spline3d');
+    if (REDUCE || !WIDE || !FINE || !host || !canvas) return;
+    // WebGL probe on a THROWAWAY canvas (never touch the real one — Spline
+    // must be the first to acquire its context).
+    const probe = document.createElement('canvas');
+    let ok = false;
+    try { ok = !!(probe.getContext('webgl2') || probe.getContext('webgl')); } catch (e) {}
+    if (!ok) return;
+    // Never compete with first paint: wait for full load, then idle.
+    await new Promise(r => document.readyState === 'complete' ? r() : addEventListener('load', r, {once: true}));
+    await new Promise(r => ('requestIdleCallback' in window) ? requestIdleCallback(r, {timeout: 3000}) : setTimeout(r, 1200));
+    document.documentElement.classList.add('spline-on');   // container gets real size
+    await new Promise(r => requestAnimationFrame(r));      // let layout settle before Spline measures
+    const { Application } = await import('https://unpkg.com/@splinetool/runtime@1/build/runtime.js');
+    const app = new Application(canvas);
+    await app.load('https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode');
+    host.classList.add('live');                            // fade the robot in
+    // Sync with the hero scroll scrub — same dissolve as .hero-inner.
+    if (window.gsap && window.ScrollTrigger) {
+      gsap.to(host, { opacity: 0, scale: .94, ease: 'none',
+        scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: .8 } });
+    }
+    // Perf: halt rendering while the hero is far off-screen (API optional).
+    if (typeof app.stop === 'function' && typeof app.play === 'function') {
+      new IntersectionObserver(en => en.forEach(e => {
+        try { e.isIntersecting ? app.play() : app.stop(); } catch (_) {}
+      }), { rootMargin: '200px' }).observe(host);
+    }
+  } catch (e) {
+    document.documentElement.classList.remove('spline-on'); // fail-safe: plasma stays
+  }
 })();
 </script>
 </body>
