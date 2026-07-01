@@ -1,4 +1,16 @@
-﻿# CODING AGENTS: READ THIS FIRST
+﻿> ## ⌁ SOURCE OF TRUTH
+> The **live site** `www.wabaytech.com` is served from **[`dist-cyber/`](./dist-cyber/)** —
+> a hand-authored static site with **no build step**. Edit it directly; see
+> **[`dist-cyber/README.md`](./dist-cyber/README.md)**.
+>
+> The root files described below (`index.html`, `styles.css`, `*.jsx`, `_build.py`,
+> `vercel.json`) are the **original Claude Design prototype export** and are **stale /
+> not deployed** — see **[`DEPRECATED.md`](./DEPRECATED.md)**. They are kept as history,
+> not edited. Everything below is the original handoff note for that prototype bundle.
+
+---
+
+# CODING AGENTS: READ THIS FIRST
 
 This is a **handoff bundle** from Claude Design (claude.ai/design).
 

@@ -1,0 +1,7 @@
+{
+  "framework": null,
+  "buildCommand": "echo no-build",
+  "installCommand": "echo no-install",
+  "outputDirectory": ".",
+  "cleanUrls": true
+}
