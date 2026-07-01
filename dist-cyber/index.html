@@ -69,10 +69,15 @@
 <script>(function(){var i=document.getElementById('intro');if(!i)return;try{if(sessionStorage.getItem('wbIntro')||matchMedia('(prefers-reduced-motion: reduce)').matches){i.remove();return;}}catch(e){}document.documentElement.style.overflow='hidden';var done=false;function end(){if(done)return;done=true;i.classList.add('done');document.documentElement.style.overflow='';try{sessionStorage.setItem('wbIntro','1');}catch(e){}setTimeout(function(){i&&i.parentNode&&i.remove();},950);}setTimeout(end,4300);i.addEventListener('click',end);})();</script>
 
 <div id="bgfx" aria-hidden="true"></div>
+<canvas id="glcanvas" aria-hidden="true"></canvas>
 <canvas id="bgcanvas" aria-hidden="true"></canvas>
 <div class="gridfloor" aria-hidden="true"></div>
+<div id="veloglow" aria-hidden="true"></div>
 <div class="scanlines" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
+<div id="scrollbar" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+<div class="cursor-dot" aria-hidden="true"></div>
 
 <!-- ── Nav ──────────────────────────────────────────────────────── -->
 <nav class="nav" id="nav"><div class="nav-inner">
@@ -338,6 +343,20 @@
   <div class="eco reveal">
     <span>Apple Developer</span><span>Google Play</span><span>Stripe</span><span>Anthropic Claude</span><span>OpenAI</span><span>iOS &amp; Android natifs</span><span>Web moderne</span><span>Cloud européen · RGPD</span>
   </div>
+  <!-- Horizontal-scroll rail (built from the same partners). Hidden unless JS
+       upgrades this section to a pinned h-scroll on wide fine-pointer screens;
+       .eco above stays the universal fallback. -->
+  <div class="eco-rail reveal" aria-hidden="true">
+    <div class="eco-card"><div class="ec-i">// Mobile</div><div class="ec-t">Apple Developer</div></div>
+    <div class="eco-card"><div class="ec-i">// Mobile</div><div class="ec-t">Google Play</div></div>
+    <div class="eco-card"><div class="ec-i">// Paiement</div><div class="ec-t">Stripe Connect</div></div>
+    <div class="eco-card"><div class="ec-i">// IA</div><div class="ec-t">Anthropic Claude</div></div>
+    <div class="eco-card"><div class="ec-i">// IA</div><div class="ec-t">OpenAI</div></div>
+    <div class="eco-card"><div class="ec-i">// Natif</div><div class="ec-t">iOS &amp; Android</div></div>
+    <div class="eco-card"><div class="ec-i">// Web</div><div class="ec-t">Web moderne</div></div>
+    <div class="eco-card"><div class="ec-i">// Conformité</div><div class="ec-t">Cloud UE · RGPD</div></div>
+  </div>
+  <div class="hscroll-progress" aria-hidden="true"></div>
 </div></section>
 
 <!-- ── Contact ──────────────────────────────────────────────────── -->
@@ -423,9 +442,14 @@
 <!-- GSAP 3 + ScrollTrigger (CDN, pinned) — cinematic scroll choreography -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- Lenis smooth scroll (studio-freight) — buttery inertia, integrated with ScrollTrigger. UMD global: Lenis -->
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
-function go(e,id){if(e)e.preventDefault();var el=document.getElementById(id);if(el)window.scrollTo({top:el.offsetTop-70,behavior:'smooth'});}
+function go(e,id){if(e)e.preventDefault();var el=document.getElementById(id);if(!el)return;
+  var y=el.getBoundingClientRect().top+window.pageYOffset-70;
+  if(window.__lenis){window.__lenis.scrollTo(y,{duration:1.2});}
+  else{window.scrollTo({top:y,behavior:'smooth'});}}
 addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',scrollY>30);},{passive:true});
 function toggleMenu(){document.getElementById('nav-links').classList.toggle('open');}
 function closeMenu(){document.getElementById('nav-links').classList.remove('open');}
@@ -470,6 +494,188 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
 })();
 
 /* ══════════════════════════════════════════════════════════════
+   WEBGL NEON PLASMA SHADER — full-viewport flowing plexus/plasma
+   reacting to the cursor. Degrades silently to the particle bg if
+   WebGL is unavailable, and never runs under reduced-motion.
+   ══════════════════════════════════════════════════════════════ */
+(function(){
+  var REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(REDUCE) return;
+  var cv=document.getElementById('glcanvas'); if(!cv) return;
+  var gl=null;
+  try{ gl=cv.getContext('webgl',{antialias:false,alpha:true,premultipliedAlpha:false,powerPreference:'low-power'})
+         || cv.getContext('experimental-webgl'); }catch(e){}
+  if(!gl) return;   // → particle network stays as the bg
+
+  var VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  var FS=[
+  'precision highp float;',
+  'uniform vec2 u_res; uniform float u_t; uniform vec2 u_mouse; uniform float u_energy;',
+  // hash / value noise
+  'float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
+  'float noise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);',
+  '  return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);}',
+  'float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p*=2.02;a*=.5;}return v;}',
+  'void main(){',
+  '  vec2 uv=(gl_FragCoord.xy-.5*u_res)/u_res.y;',
+  '  vec2 m=(u_mouse-.5*u_res)/u_res.y;',
+  '  float t=u_t*.05;',
+  // flowing domain-warped plasma
+  '  vec2 q=vec2(fbm(uv*1.6+vec2(t,0.)), fbm(uv*1.6+vec2(5.2,t)));',
+  '  vec2 r=vec2(fbm(uv*1.6+2.0*q+vec2(1.7,9.2)+.15*t), fbm(uv*1.6+2.0*q+vec2(8.3,2.8)-.12*t));',
+  '  float f=fbm(uv*1.6+2.4*r);',
+  // mouse ripple
+  '  float md=length(uv-m);',
+  '  f+=0.14*exp(-md*3.2)*(0.6+0.6*u_energy);',
+  // neon palette: cyan -> violet -> magenta on near-black
+  '  vec3 cyan=vec3(0.098,0.89,1.0), viol=vec3(0.64,0.36,1.0), mag=vec3(1.0,0.17,0.82);',
+  '  vec3 col=mix(cyan,viol,smoothstep(0.25,0.6,f));',
+  '  col=mix(col,mag,smoothstep(0.55,0.9,f));',
+  // ridged neon veins for that plexus energy
+  '  float vein=abs(f-0.5); vein=0.045/(vein+0.045);',
+  '  col+=vein*mix(cyan,mag,r.x)*(0.35+0.5*u_energy);',
+  // vignette + overall low intensity so text stays readable
+  '  float vig=smoothstep(1.25,0.15,length(uv));',
+  '  float amt=pow(f,1.6)*0.9*vig;',
+  '  gl_FragColor=vec4(col*amt,amt*0.9);',
+  '}'
+  ].join('\n');
+
+  function sh(type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){return null;}return s;}
+  var vs=sh(gl.VERTEX_SHADER,VS),fs=sh(gl.FRAGMENT_SHADER,FS);
+  if(!vs||!fs) return;
+  var prog=gl.createProgram();gl.attachShader(prog,vs);gl.attachShader(prog,fs);gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog,gl.LINK_STATUS)) return;
+  gl.useProgram(prog);
+
+  var buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  var loc=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
+
+  var uRes=gl.getUniformLocation(prog,'u_res'),uT=gl.getUniformLocation(prog,'u_t'),
+      uM=gl.getUniformLocation(prog,'u_mouse'),uE=gl.getUniformLocation(prog,'u_energy');
+  var dpr=Math.min(devicePixelRatio||1,1.5),W=0,H=0,mx=0,my=0,tmx=0,tmy=0,energy=0,tEnergy=0,raf=0,t0=performance.now();
+  function size(){W=Math.round(innerWidth*dpr);H=Math.round(innerHeight*dpr);cv.width=W;cv.height=H;
+    cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';gl.viewport(0,0,W,H);
+    mx=W/2;my=H/2;tmx=mx;tmy=my;}
+  function frame(now){
+    tmx+=(mx-tmx)*.06;tmy+=(my-tmy)*.06;energy+=(tEnergy-energy)*.05;tEnergy*=.94;
+    gl.uniform2f(uRes,W,H);gl.uniform1f(uT,(now-t0)/1000);gl.uniform2f(uM,tmx,tmy);gl.uniform1f(uE,Math.min(energy,1.2));
+    gl.drawArrays(gl.TRIANGLES,0,3);raf=requestAnimationFrame(frame);}
+  addEventListener('resize',size,{passive:true});
+  addEventListener('mousemove',function(e){mx=e.clientX*dpr;my=(innerHeight-e.clientY)*dpr;tEnergy=Math.min(tEnergy+.05,1.2);},{passive:true});
+  document.addEventListener('visibilitychange',function(){if(document.hidden){cancelAnimationFrame(raf);}else{t0=performance.now();raf=requestAnimationFrame(frame);}});
+  size();document.documentElement.classList.add('gl-on');raf=requestAnimationFrame(frame);
+  // scroll velocity feeds the shader energy (hooked by the cinematic layer too)
+  window.__wbGlEnergy=function(v){ tEnergy=Math.min(Math.max(tEnergy,v||.6),1.2); };
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   LENIS SMOOTH SCROLL + CUSTOM NEON CURSOR + MAGNETIC/TILT.
+   Everything guarded: reduced-motion → native scroll, no cursor;
+   coarse/touch pointer → no cursor, no magnet.
+   ══════════════════════════════════════════════════════════════ */
+(function(){
+  var REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var FINE   = matchMedia('(pointer: fine)').matches && matchMedia('(hover: hover)').matches;
+
+  /* ---- Lenis smooth scroll ---- */
+  window.__lenis=null;
+  if(!REDUCE && window.Lenis){
+    try{
+      var lenis=new Lenis({ duration:1.1, smoothWheel:true, wheelMultiplier:1.0, touchMultiplier:1.4,
+        easing:function(t){return Math.min(1,1.001-Math.pow(2,-10*t));} });
+      window.__lenis=lenis;
+      // integrate with ScrollTrigger if present (cinematic layer registers it)
+      function hookST(){
+        if(window.ScrollTrigger){
+          lenis.on('scroll',ScrollTrigger.update);
+          if(window.gsap){
+            gsap.ticker.add(function(time){ lenis.raf(time*1000); });
+            gsap.ticker.lagSmoothing(0);
+            return true;
+          }
+        }
+        return false;
+      }
+      if(!hookST()){
+        function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+      }
+    }catch(e){ window.__lenis=null; }
+  }
+
+  /* ---- Custom neon cursor + magnetic + tilt (fine pointer only) ---- */
+  if(!REDUCE && FINE){
+    var dot=document.querySelector('.cursor-dot'), ring=document.querySelector('.cursor-ring');
+    if(dot && ring){
+      document.documentElement.classList.add('cursor-on');
+      var dx=innerWidth/2,dy=innerHeight/2, rx=dx,ry=dy;
+      addEventListener('mousemove',function(e){ dx=e.clientX; dy=e.clientY; },{passive:true});
+      (function loop(){ rx+=(dx-rx)*.18; ry+=(dy-ry)*.18;
+        dot.style.transform='translate('+dx+'px,'+dy+'px) translate(-50%,-50%)';
+        ring.style.transform='translate('+rx+'px,'+ry+'px) translate(-50%,-50%)';
+        requestAnimationFrame(loop); })();
+      // hot state over interactive elements
+      var HOT='a,button,.btn,.nav-cta,.teaser,.svc,.step,.eco-card,.contact-item,.pcard,input,textarea';
+      document.addEventListener('mouseover',function(e){ if(e.target.closest(HOT)) document.documentElement.classList.add('cursor-hot'); });
+      document.addEventListener('mouseout',function(e){ if(e.target.closest(HOT) && !(e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest(HOT))) document.documentElement.classList.remove('cursor-hot'); });
+      addEventListener('mouseleave',function(){ document.documentElement.classList.remove('cursor-on'); });
+      addEventListener('mouseenter',function(){ document.documentElement.classList.add('cursor-on'); });
+
+      /* magnetic pull on CTAs + logo */
+      document.querySelectorAll('.btn,.nav-cta,.footer-social a').forEach(function(el){
+        var strength=el.classList.contains('nav-cta')?.28:.32;
+        el.addEventListener('mousemove',function(e){
+          var r=el.getBoundingClientRect(), mx=e.clientX-(r.left+r.width/2), my=e.clientY-(r.top+r.height/2);
+          el.style.transform='translate('+mx*strength+'px,'+my*strength+'px)';
+        });
+        el.addEventListener('mouseleave',function(){ el.style.transform=''; });
+      });
+
+      /* 3D tilt toward cursor on cards */
+      document.documentElement.classList.add('magnet-on');
+      document.querySelectorAll('.teaser,.svc,.step,.eco-card').forEach(function(card){
+        var rID=0;
+        card.addEventListener('mousemove',function(e){
+          var r=card.getBoundingClientRect();
+          var px=(e.clientX-r.left)/r.width-.5, py=(e.clientY-r.top)/r.height-.5;
+          card.classList.add('tilting');
+          cancelAnimationFrame(rID);
+          rID=requestAnimationFrame(function(){
+            card.style.transform='perspective(760px) rotateX('+(-py*7)+'deg) rotateY('+(px*9)+'deg) translateY(-6px)';
+          });
+        });
+        card.addEventListener('mouseleave',function(){
+          cancelAnimationFrame(rID); card.classList.remove('tilting'); card.style.transform='';
+        });
+      });
+    }
+  }
+
+  /* ---- Scroll progress bar + velocity glow (cheap, always-on unless reduced) ---- */
+  if(!REDUCE){
+    var bar=document.getElementById('scrollbar'), glow=document.getElementById('veloglow');
+    var lastY=scrollY,lastT=performance.now(),tick=0;
+    function upd(){
+      var h=document.documentElement.scrollHeight-innerHeight;
+      var p=h>0?Math.min(scrollY/h,1):0;
+      if(bar) bar.style.transform='scaleX('+p+')';
+    }
+    addEventListener('scroll',function(){
+      upd();
+      var now=performance.now(),dy=Math.abs(scrollY-lastY),dt=Math.max(now-lastT,16),v=dy/dt;
+      lastY=scrollY;lastT=now;
+      if(glow){ glow.style.opacity=Math.min(v*.35,.6); clearTimeout(tick); tick=setTimeout(function(){glow.style.opacity=0;},220); }
+      if(window.__wbGlEnergy && v>.5) window.__wbGlEnergy(Math.min(v*.5,1.1));
+    },{passive:true});
+    upd();
+  }
+})();
+
+/* ══════════════════════════════════════════════════════════════
    GSAP CINEMATIC LAYER — scroll-driven choreography.
    Everything sits inside the reduced-motion guard so no-JS AND
    reduced-motion users get the fully visible static state.
@@ -485,34 +691,41 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
 
   var EASE = 'power3.out';
 
-  /* ── 1. HERO — word-by-word headline, staggered HUD, grid parallax ── */
-  function splitWords(el){
-    if(!el) return [];
-    // Wrap each visible word in an inline-block span, preserving <br> and inner <span> (the accent).
-    var out=[];
+  /* ── 1. HERO — CHARACTER-by-character headline, gradient sweep,
+         accent scramble, staggered HUD, grid parallax ── */
+  function splitChars(el){
+    if(!el) return { chars:[], accent:null };
+    var chars=[], accent=null;
     Array.prototype.slice.call(el.childNodes).forEach(function(node){
-      if(node.nodeType===3){ // text node → split into words
+      if(node.nodeType===3){ // text → per-character spans (keep spaces as text)
         var frag=document.createDocumentFragment();
-        node.textContent.split(/(\s+)/).forEach(function(tok){
-          if(tok.trim()===''){ frag.appendChild(document.createTextNode(tok)); return; }
-          var w=document.createElement('span'); w.className='w'; w.textContent=tok;
-          w.style.display='inline-block'; w.style.willChange='transform,opacity,filter';
-          frag.appendChild(w); out.push(w);
+        node.textContent.split('').forEach(function(ch){
+          if(ch===' '){ frag.appendChild(document.createTextNode(' ')); return; }
+          var c=document.createElement('span'); c.className='char'; c.textContent=ch;
+          frag.appendChild(c); chars.push(c);
         });
         el.replaceChild(frag,node);
       } else if(node.nodeType===1){
-        if(node.tagName==='BR'){ return; }
-        // keep element (e.g. the .accent span) as a single animated unit
-        node.style.display='inline-block'; node.style.willChange='transform,opacity,filter';
-        out.push(node);
+        if(node.tagName==='BR') return;
+        // the accent span: split ITS text into chars too, remember it for the scramble
+        if(node.classList && node.classList.contains('accent')){ accent=node; }
+        var inner=node.textContent, ifrag=document.createDocumentFragment();
+        inner.split('').forEach(function(ch){
+          if(ch===' '){ ifrag.appendChild(document.createTextNode(' ')); return; }
+          var c=document.createElement('span'); c.className='char'; c.textContent=ch;
+          ifrag.appendChild(c); chars.push(c);
+        });
+        node.textContent=''; node.appendChild(ifrag);
+        node.style.display='inline-block';
       }
     });
-    return out;
+    return { chars:chars, accent:accent };
   }
 
   var heroTl = gsap.timeline({ defaults:{ ease:EASE } });
   var h1 = document.querySelector('.hero h1');
-  var words = splitWords(h1);
+  var split = splitChars(h1);
+  var chars = split.chars, accent = split.accent;
   var pill = document.querySelector('.hero-pill');
   var sub = document.querySelector('.hero-sub');
   var actions = document.querySelector('.hero-actions');
@@ -520,11 +733,37 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   var trust = document.querySelector('.hero-trust');
 
   if(pill) heroTl.from(pill,{ y:18, opacity:0, duration:.55 }, 0);
-  if(words.length) heroTl.from(words,{ y:34, opacity:0, filter:'blur(10px)', duration:.7, stagger:.08 }, .12);
-  if(sub) heroTl.from(sub,{ y:20, opacity:0, duration:.6 }, '-=.35');
+  if(chars.length) heroTl.from(chars,{ y:44, opacity:0, filter:'blur(12px)', rotateX:-60, duration:.62,
+    stagger:{ each:.028, from:'start' }, ease:'power4.out' }, .1);
+  if(sub) heroTl.from(sub,{ y:20, opacity:0, duration:.6 }, '-=.3');
   if(actions) heroTl.from(actions,{ y:18, opacity:0, duration:.5 }, '-=.35');
   if(hudCells.length) heroTl.from(hudCells,{ y:24, opacity:0, duration:.5, stagger:.07 }, '-=.3');
   if(trust) heroTl.from(trust,{ y:14, opacity:0, duration:.5 }, '-=.25');
+  // index each char for the staggered gradient-sweep highlight, then paint it on
+  chars.forEach(function(c,i){ c.style.setProperty('--si', i); });
+  if(h1) heroTl.add(function(){ h1.classList.add('swept'); }, '-=.2');
+
+  // ── accent-word GLITCH SCRAMBLE (runs after reveal, then periodically) ──
+  if(accent){
+    var GLYPHS='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/#@%&*<>';
+    var finalText=accent.textContent;
+    function scramble(){
+      var acChars=accent.querySelectorAll('.char');
+      if(!acChars.length) return;
+      acChars.forEach(function(c,idx){
+        var orig=c.textContent, rounds=6+Math.floor(Math.random()*6), r=0;
+        var iv=setInterval(function(){
+          if(r>=rounds || r>=idx+8){ c.textContent=orig; clearInterval(iv); return; }
+          c.textContent=GLYPHS[Math.floor(Math.random()*GLYPHS.length)];
+          r++;
+        }, 34);
+      });
+    }
+    heroTl.add(function(){ scramble(); }, '+=.25');
+    // subtle re-glitch on an interval + when the hero scrolls back into view
+    var glitchIv=setInterval(function(){ if(!document.hidden && scrollY<innerHeight*.8) scramble(); }, 7200);
+    window.addEventListener('pagehide',function(){ clearInterval(glitchIv); });
+  }
 
   // brief particle-network intensification on load
   if(typeof window.__wbParticleBoost==='function') window.__wbParticleBoost(2.1, 1400);
@@ -675,6 +914,48 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   /* ── 7. Nav CTA + logo micro-intro ── */
   gsap.from('.nav',{ y:-24, opacity:0, duration:.6, ease:EASE, delay:.1 });
 
+  /* ── 8. HERO PIN + cinematic scrub-out ──
+     Pin the hero briefly and scrub a scale/blur/fade dissolve as the user
+     leaves it, so the page opens like a title sequence. Wide screens only. */
+  var WIDE = window.matchMedia('(min-width:900px)').matches;
+  var heroEl = document.querySelector('.hero'), heroInner=document.querySelector('.hero-inner');
+  if(WIDE && heroEl && heroInner){
+    gsap.to(heroInner,{ scale:.92, opacity:0, filter:'blur(6px)', y:-40, ease:'none',
+      scrollTrigger:{ trigger:heroEl, start:'top top', end:'bottom top', scrub:.8, pin:false } });
+  }
+
+  /* ── 9. HORIZONTAL-SCROLL ECOSYSTEM RAIL ──
+     Pin #ecosysteme and translate the card rail horizontally as the user
+     scrolls vertically. Wide fine-pointer screens only; everywhere else the
+     centered .eco chip cloud (universal fallback) stays. */
+  var eco = document.getElementById('ecosysteme');
+  var rail = eco && eco.querySelector('.eco-rail');
+  var FINEPTR = window.matchMedia('(pointer:fine)').matches;
+  if(WIDE && FINEPTR && eco && rail && rail.children.length){
+    document.documentElement.classList.add('hscroll-on');
+    eco.classList.add('hscroll');
+    // measure how far the rail overflows the viewport
+    var getShift=function(){ return Math.max(0, rail.scrollWidth - innerWidth); };
+    var prog = eco.querySelector('.hscroll-progress');
+    ScrollTrigger.create({
+      trigger:eco, start:'top top', end:function(){ return '+='+(getShift()+innerHeight*0.6); },
+      pin:true, scrub:.7, invalidateOnRefresh:true, anticipatePin:1,
+      onUpdate:function(self){
+        var shift=getShift();
+        gsap.set(rail,{ x:-shift*self.progress });
+        if(eco) eco.style.setProperty('--hp', self.progress.toFixed(3));
+      }
+    });
+    // cards stay visible (they live inside a pinned section that's on-screen
+    // whenever it's active) — a subtle upward drift on first approach adds life
+    // WITHOUT ever risking a stuck opacity:0 (uses a self-clearing 'to' from a
+    // JS-set start state, cleared on complete).
+    gsap.set(rail.children,{ y:26, opacity:.35 });
+    gsap.to(rail.children,{ y:0, opacity:1, duration:.6, ease:EASE, stagger:.05, clearProps:'opacity',
+      scrollTrigger:{ trigger:eco, start:'top 78%', once:true },
+      onComplete:function(){ gsap.set(rail.children,{ clearProps:'transform,opacity' }); } });
+  }
+
   // Recalculate once fonts/images settle so triggers align.
   window.addEventListener('load', function(){ ScrollTrigger.refresh(); });
 
@@ -683,7 +964,7 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
      trailing/staggered items. This sweep forces any GSAP-animated element
      already ABOVE the viewport (i.e. the user has clearly passed it) back to
      its visible resting state. Runs debounced on scroll and once after load. */
-  var GUARDED = '.svc,.teaser,.value-row,.eco,.marquee,.step,.panel,.contact-info,.form,.founder';
+  var GUARDED = '.svc,.teaser,.value-row,.eco,.eco-card,.marquee,.step,.panel,.contact-info,.form,.founder';
   function failsafeSweep(){
     var vt = -40; // small slack above the top edge
     gsap.utils.toArray(GUARDED).forEach(function(el){
