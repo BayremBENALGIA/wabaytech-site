@@ -1109,6 +1109,48 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
 })();
 </script>
 
+<!-- ── Signature audio WABAYTECH — boot-up cyber (WebAudio, zéro asset) ──
+     Jouée UNE fois par session, à la PREMIÈRE interaction (les navigateurs
+     bloquent l'autoplay sonore avant un geste utilisateur). Fail-silent. -->
+<script>
+(function(){
+  var KEY='wb.introSound';
+  try{ if(sessionStorage.getItem(KEY)) return; }catch(e){ return; }
+  function boot(){
+    try{
+      var Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx) return;
+      var ctx=new Ctx();
+      var master=ctx.createGain(); master.gain.value=.11; master.connect(ctx.destination);
+      var t0=ctx.currentTime+.03;
+      // 1) montée grave « mise sous tension » (saw 70→210 Hz, filtre qui s'ouvre)
+      var sweep=ctx.createOscillator(); sweep.type='sawtooth';
+      sweep.frequency.setValueAtTime(70,t0); sweep.frequency.exponentialRampToValueAtTime(210,t0+.55);
+      var lp=ctx.createBiquadFilter(); lp.type='lowpass';
+      lp.frequency.setValueAtTime(300,t0); lp.frequency.exponentialRampToValueAtTime(2400,t0+.55);
+      var gs=ctx.createGain(); gs.gain.setValueAtTime(0,t0);
+      gs.gain.linearRampToValueAtTime(.8,t0+.08); gs.gain.exponentialRampToValueAtTime(.0001,t0+.7);
+      sweep.connect(lp); lp.connect(gs); gs.connect(master); sweep.start(t0); sweep.stop(t0+.75);
+      // 2) deux blips cristallins « système prêt » (montée cyan → magenta)
+      [[1244.5,.5],[1661.2,.68]].forEach(function(bl){
+        var tb=t0+bl[1], o=ctx.createOscillator(), g=ctx.createGain();
+        o.type='sine'; o.frequency.value=bl[0];
+        g.gain.setValueAtTime(0,tb); g.gain.linearRampToValueAtTime(.5,tb+.01);
+        g.gain.exponentialRampToValueAtTime(.0001,tb+.34);
+        o.connect(g); g.connect(master); o.start(tb); o.stop(tb+.4);
+      });
+      setTimeout(function(){ try{ctx.close();}catch(e){} },1800);
+    }catch(e){}
+  }
+  function onGesture(){
+    removeEventListener('pointerdown',onGesture); removeEventListener('keydown',onGesture);
+    try{ if(sessionStorage.getItem(KEY)) return; sessionStorage.setItem(KEY,'1'); }catch(e){}
+    boot();
+  }
+  addEventListener('pointerdown',onGesture,{once:true,passive:true});
+  addEventListener('keydown',onGesture,{once:true});
+})();
+</script>
+
 <!-- ── Interactive 3D hero robot (Spline) — lazy, desktop-only, fail-safe ──
      Vanilla port of the React SplineScene reference (@splinetool/runtime).
      Loads AFTER window load + idle so it never competes with first paint;
