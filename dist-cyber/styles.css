@@ -248,6 +248,8 @@ a:focus-visible{outline-offset:4px}
   box-shadow:0 18px 50px rgba(0,0,0,.5),0 0 0 1px color-mix(in srgb,var(--sc) 30%,transparent)}
 .svc:hover::before{opacity:1}
 .svc:hover::after{opacity:1;transform:scaleX(1)}
+/* scroll-ignite: GSAP adds .ignite as each card enters — accent line draws across the top */
+.svc.ignite::after{opacity:1;transform:scaleX(1)}
 .svc:hover .svc-icon{box-shadow:inset 0 0 18px color-mix(in srgb,var(--sc) 22%,transparent),0 0 22px color-mix(in srgb,var(--sc) 28%,transparent)}
 .svc-icon{transition:box-shadow .3s,transform .3s}
 .svc:hover .svc-icon{transform:translateY(-2px)}
@@ -411,6 +413,26 @@ a:focus-visible{outline-offset:4px}
   .stats{grid-template-columns:1fr 1fr}
   .footer-top{grid-template-columns:1fr}
 }
+
+/* ============================================================
+   GSAP cinematic layer — hand-off from the CSS/IO reveal system.
+   When JS + GSAP are active (and motion is allowed) <html> gets
+   .gsap-on. GSAP then drives every entrance via its own from-state,
+   so we neutralise the CSS reveal to avoid double-animation / a
+   stuck opacity:0. No-JS and reduced-motion never get .gsap-on,
+   so the original CSS reveal (and its reduced-motion override) apply.
+   ============================================================ */
+.gsap-on .reveal{opacity:1;transform:none;transition:none}
+/* keep GPU-friendly compositing on the elements GSAP animates most */
+.gsap-on .hero h1 .w,.gsap-on .svc,.gsap-on .step,.gsap-on .panel,.gsap-on .teaser{will-change:transform,opacity}
+
+/* JS-drawn process connector rail (scrubbed scaleX 0→1). Sits over the
+   static CSS ::before rail, which remains the reduced-motion fallback. */
+.process .proc-rail-draw{position:absolute;left:24px;right:24px;top:114px;height:2px;
+  transform:scaleX(0);transform-origin:left center;pointer-events:none;z-index:1;border-radius:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet) 50%,var(--magenta));
+  box-shadow:0 0 14px color-mix(in srgb,var(--cyan) 60%,transparent);will-change:transform}
+@media(max-width:960px){.process .proc-rail-draw{display:none}}
 
 /* ---- Reduced motion -------------------------------------- */
 @media(prefers-reduced-motion:reduce){

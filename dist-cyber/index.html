@@ -39,6 +39,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="styles.css"/>
+<!-- No-JS safety net: the .reveal system (and the GSAP layer) both rely on
+     JavaScript to become visible. If scripting is off, force every animated
+     element into its visible resting state so all content is readable. -->
+<noscript><style>
+  .reveal{opacity:1!important;transform:none!important}
+  .hero h1,.svc,.step,.panel,.teaser,.value-row,.eco,.founder,.marquee{opacity:1!important;transform:none!important}
+  #intro{display:none!important}
+</style></noscript>
 </head>
 <body>
 
@@ -412,6 +420,10 @@
   </div>
 </div></footer>
 
+<!-- GSAP 3 + ScrollTrigger (CDN, pinned) — cinematic scroll choreography -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script>
 function go(e,id){if(e)e.preventDefault();var el=document.getElementById(id);if(el)window.scrollTo({top:el.offsetTop-70,behavior:'smooth'});}
 addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',scrollY>30);},{passive:true});
@@ -425,14 +437,16 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   var cv=document.getElementById('bgcanvas');if(!cv)return;
-  var ctx=cv.getContext('2d'),W=0,H=0,dpr=Math.min(devicePixelRatio||1,2),parts=[],mouse={x:-999,y:-999},raf=0;
+  var ctx=cv.getContext('2d'),W=0,H=0,dpr=Math.min(devicePixelRatio||1,2),parts=[],mouse={x:-999,y:-999},raf=0,boost=1;
   function size(){W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
     var n=Math.min(Math.round(W*H/13000),120);parts=[];for(var i=0;i<n;i++){parts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,m:Math.random()<.18});}}
   function frame(){ctx.clearRect(0,0,W,H);
-    for(var i=0;i<parts.length;i++){var p=parts[i];p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+    if(boost>1.001)boost+=(1-boost)*.04;else boost=1; // ease boost back to rest
+    var link=18000*boost,linkA=.32*Math.min(boost,1.8),spd=boost;
+    for(var i=0;i<parts.length;i++){var p=parts[i];p.x+=p.vx*spd;p.y+=p.vy*spd;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
       ctx.beginPath();ctx.arc(p.x,p.y,p.m?2.1:1.4,0,6.283);ctx.fillStyle=p.m?'rgba(255,43,208,.85)':'rgba(25,227,255,.8)';ctx.fill();}
     for(var a=0;a<parts.length;a++){for(var b=a+1;b<parts.length;b++){var p1=parts[a],p2=parts[b],dx=p1.x-p2.x,dy=p1.y-p2.y,d=dx*dx+dy*dy;
-      if(d<18000){var o=(1-d/18000)*.32;ctx.strokeStyle='rgba(25,227,255,'+o+')';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();}}}
+      if(d<link){var o=(1-d/link)*linkA;ctx.strokeStyle='rgba(25,227,255,'+o+')';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();}}}
     for(var k=0;k<parts.length;k++){var pp=parts[k],mx=pp.x-mouse.x,my=pp.y-mouse.y,md=mx*mx+my*my;
       if(md<26000){var mo=(1-md/26000)*.55;ctx.strokeStyle='rgba(164,91,255,'+mo+')';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(pp.x,pp.y);ctx.lineTo(mouse.x,mouse.y);ctx.stroke();}}
     raf=requestAnimationFrame(frame);}
@@ -442,6 +456,249 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   addEventListener('mouseout',function(){mouse.x=-999;mouse.y=-999;});
   document.addEventListener('visibilitychange',function(){if(document.hidden)cancelAnimationFrame(raf);else start();});
   size();start();
+  // Public hook — briefly intensify the network (used by the GSAP hero timeline on load).
+  window.__wbParticleBoost=function(mult){ if(reduce)return; boost=Math.max(boost,mult||2); };
+  // Scroll-velocity reaction: fast scrolling energises the network.
+  if(!reduce){
+    var lastY=scrollY,lastT=performance.now();
+    addEventListener('scroll',function(){
+      var now=performance.now(),dy=Math.abs(scrollY-lastY),dt=Math.max(now-lastT,16);
+      var v=dy/dt; lastY=scrollY; lastT=now;
+      if(v>0.4) boost=Math.min(Math.max(boost,1+Math.min(v*0.9,1.6)),2.6);
+    },{passive:true});
+  }
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   GSAP CINEMATIC LAYER — scroll-driven choreography.
+   Everything sits inside the reduced-motion guard so no-JS AND
+   reduced-motion users get the fully visible static state.
+   ══════════════════════════════════════════════════════════════ */
+(function(){
+  var REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(REDUCE) return;                          // reduced users → CSS static state, untouched
+  if(!window.gsap || !window.ScrollTrigger) return;  // CDN blocked → CSS .reveal/IO fallback stays
+
+  gsap.registerPlugin(ScrollTrigger);
+  // Signal CSS that GSAP now owns the reveals — neutralises the IO/CSS reveal so nothing double-fires.
+  document.documentElement.classList.add('gsap-on');
+
+  var EASE = 'power3.out';
+
+  /* ── 1. HERO — word-by-word headline, staggered HUD, grid parallax ── */
+  function splitWords(el){
+    if(!el) return [];
+    // Wrap each visible word in an inline-block span, preserving <br> and inner <span> (the accent).
+    var out=[];
+    Array.prototype.slice.call(el.childNodes).forEach(function(node){
+      if(node.nodeType===3){ // text node → split into words
+        var frag=document.createDocumentFragment();
+        node.textContent.split(/(\s+)/).forEach(function(tok){
+          if(tok.trim()===''){ frag.appendChild(document.createTextNode(tok)); return; }
+          var w=document.createElement('span'); w.className='w'; w.textContent=tok;
+          w.style.display='inline-block'; w.style.willChange='transform,opacity,filter';
+          frag.appendChild(w); out.push(w);
+        });
+        el.replaceChild(frag,node);
+      } else if(node.nodeType===1){
+        if(node.tagName==='BR'){ return; }
+        // keep element (e.g. the .accent span) as a single animated unit
+        node.style.display='inline-block'; node.style.willChange='transform,opacity,filter';
+        out.push(node);
+      }
+    });
+    return out;
+  }
+
+  var heroTl = gsap.timeline({ defaults:{ ease:EASE } });
+  var h1 = document.querySelector('.hero h1');
+  var words = splitWords(h1);
+  var pill = document.querySelector('.hero-pill');
+  var sub = document.querySelector('.hero-sub');
+  var actions = document.querySelector('.hero-actions');
+  var hudCells = gsap.utils.toArray('.hero-hud .cell');
+  var trust = document.querySelector('.hero-trust');
+
+  if(pill) heroTl.from(pill,{ y:18, opacity:0, duration:.55 }, 0);
+  if(words.length) heroTl.from(words,{ y:34, opacity:0, filter:'blur(10px)', duration:.7, stagger:.08 }, .12);
+  if(sub) heroTl.from(sub,{ y:20, opacity:0, duration:.6 }, '-=.35');
+  if(actions) heroTl.from(actions,{ y:18, opacity:0, duration:.5 }, '-=.35');
+  if(hudCells.length) heroTl.from(hudCells,{ y:24, opacity:0, duration:.5, stagger:.07 }, '-=.3');
+  if(trust) heroTl.from(trust,{ y:14, opacity:0, duration:.5 }, '-=.25');
+
+  // brief particle-network intensification on load
+  if(typeof window.__wbParticleBoost==='function') window.__wbParticleBoost(2.1, 1400);
+
+  // continuous parallax drift on neon grid floor + bg glow, linked to scroll
+  var grid = document.querySelector('.gridfloor');
+  if(grid){
+    gsap.to(grid,{ yPercent:14, ease:'none',
+      scrollTrigger:{ trigger:document.body, start:'top top', end:'bottom bottom', scrub:1 } });
+  }
+  var bgfx = document.getElementById('bgfx');
+  if(bgfx){
+    gsap.to(bgfx,{ yPercent:-8, ease:'none',
+      scrollTrigger:{ trigger:document.body, start:'top top', end:'bottom bottom', scrub:1.4 } });
+  }
+
+  /* ── 2. GENERIC SECTION REVEALS — headings + rows on scroll ── */
+  // Heads (eyebrow + title + lede) rise together.
+  gsap.utils.toArray('.section-head, .center-head').forEach(function(head){
+    var bits = head.querySelectorAll('.eyebrow, .section-title, .section-lede');
+    gsap.from(bits,{ y:40, opacity:0, duration:.8, ease:EASE, stagger:.12,
+      scrollTrigger:{ trigger:head, start:'top 82%' } });
+  });
+
+  // Batched card/row reveals (y+opacity+slight scale), staggered per group.
+  function batchReveal(sel, cfg){
+    cfg = cfg || {};
+    ScrollTrigger.batch(gsap.utils.toArray(sel),{
+      start: cfg.start || 'top 88%',
+      onEnter: function(batch){
+        gsap.from(batch,{ y:44, opacity:0, scale:.965, duration:.7, ease:EASE,
+          stagger:{ each:.09, from:'start' }, overwrite:true });
+      }
+    });
+  }
+  batchReveal('.teaser-grid .teaser');
+  batchReveal('.values .value-row');
+  batchReveal('.contact-info, .form');
+
+  /* ── 3. PRODUCT PANELS (PROXECO / VECTOR) — parallax + draw connectors ── */
+  gsap.utils.toArray('.panel').forEach(function(panel){
+    var copy = panel.querySelector('.panel-copy');
+    var visual = panel.querySelector('.panel-visual');
+    // panel entrance
+    gsap.from(panel,{ y:60, opacity:0, duration:.9, ease:EASE,
+      scrollTrigger:{ trigger:panel, start:'top 84%' } });
+    // copy content rises
+    if(copy){
+      gsap.from(copy.children,{ y:26, opacity:0, duration:.6, ease:EASE, stagger:.06,
+        scrollTrigger:{ trigger:panel, start:'top 76%' } });
+    }
+    // parallax the neon node diagram
+    if(visual){
+      var ring = visual.querySelector('.ring');
+      if(ring){
+        gsap.fromTo(ring,{ yPercent:-6, scale:1.04 },{ yPercent:6, ease:'none',
+          scrollTrigger:{ trigger:panel, start:'top bottom', end:'bottom top', scrub:1 } });
+      }
+      // draw/pulse the connector lines on view
+      var lines = visual.querySelectorAll('.ring line');
+      if(lines.length){
+        // lines radiate from the centre node (200,200) — scale out from there
+        gsap.set(lines,{ transformOrigin:'200px 200px', svgOrigin:'200 200' });
+        gsap.fromTo(lines,{ scale:0, opacity:0 },{ scale:1, opacity:1, duration:.9, ease:'power2.out', stagger:.12,
+          scrollTrigger:{ trigger:panel, start:'top 70%' } });
+      }
+      // node dots pop in
+      var dots = visual.querySelectorAll('.ring circle[r="6"], .ring circle[r="7"]');
+      if(dots.length){
+        gsap.from(dots,{ scale:0, transformOrigin:'center', duration:.5, ease:'back.out(2.4)', stagger:.12,
+          scrollTrigger:{ trigger:panel, start:'top 66%' } });
+      }
+    }
+  });
+
+  /* ── 4. SERVICES GRID — cards IGNITE (accent line scaleX, icon glow, lift) ── */
+  ScrollTrigger.batch(gsap.utils.toArray('.svc'),{
+    start:'top 88%',
+    onEnter:function(batch){
+      gsap.from(batch,{ y:48, opacity:0, scale:.95, duration:.7, ease:EASE,
+        stagger:{ each:.1, from:'start' }, overwrite:true });
+      batch.forEach(function(card){
+        var icon=card.querySelector('.svc-icon');
+        // ignite: light the accent line (scaleX 0→1) via a class the CSS drives
+        card.classList.add('ignite');
+        if(icon){
+          gsap.fromTo(icon,{ scale:.85, filter:'brightness(1)' },
+            { scale:1, filter:'brightness(1.35)', duration:.5, ease:'power2.out',
+              onComplete:function(){ gsap.to(icon,{ filter:'brightness(1)', duration:.6 }); } });
+        }
+      });
+    }
+  });
+
+  /* ── 5. PROCESS TIMELINE — connector rail DRAWS with scrub, medallions pop ── */
+  var proc = document.querySelector('.process');
+  if(proc){
+    // Build a JS-driven rail overlay we can scale with scrub (CSS ::before stays as static fallback).
+    var rail = document.createElement('span');
+    rail.className='proc-rail-draw'; rail.setAttribute('aria-hidden','true');
+    proc.appendChild(rail);
+    gsap.fromTo(rail,{ scaleX:0 },{ scaleX:1, ease:'none',
+      scrollTrigger:{ trigger:proc, start:'top 78%', end:'bottom 60%', scrub:.6 } });
+
+    var steps = gsap.utils.toArray('.process .step');
+    steps.forEach(function(step,i){
+      var medallion = step.querySelector('.no');
+      gsap.from(step,{ y:46, opacity:0, duration:.7, ease:EASE,
+        scrollTrigger:{ trigger:step, start:'top 86%' } });
+      if(medallion){
+        gsap.from(medallion,{ scale:0, rotate:-30, transformOrigin:'center', duration:.6, ease:'back.out(2.2)',
+          scrollTrigger:{ trigger:step, start:'top 80%' } });
+      }
+    });
+  }
+
+  /* ── 6. ECOSYSTEM — marquee already CSS; neon pulse on headings via ScrollTrigger ── */
+  gsap.utils.toArray('.section-title em, .founder .hl, .eyebrow').forEach(function(el){
+    ScrollTrigger.create({
+      trigger:el, start:'top 85%', once:true,
+      onEnter:function(){
+        gsap.fromTo(el,{ filter:'drop-shadow(0 0 0 rgba(120,150,255,0)) brightness(1)' },
+          { filter:'drop-shadow(0 0 24px rgba(120,150,255,.55)) brightness(1.25)', duration:.5, ease:'power2.out',
+            yoyo:true, repeat:1 });
+      }
+    });
+  });
+  // ecosystem chips — fade+rise the whole strip as ONE unit (no per-chip
+  // stagger, so a fast scroll can never freeze an individual chip mid-tween).
+  var eco=document.querySelector('.eco');
+  if(eco){
+    gsap.from(eco,{ y:26, opacity:0, duration:.7, ease:EASE,
+      scrollTrigger:{ trigger:eco, start:'top 88%', once:true } });
+  }
+  // founder quote reveal
+  var founder=document.querySelector('.founder');
+  if(founder){
+    gsap.from(founder,{ y:50, opacity:0, duration:.9, ease:EASE,
+      scrollTrigger:{ trigger:founder, start:'top 82%' } });
+  }
+  // marquee strip fades in as one unit (the CSS scroll animation continues untouched)
+  var marquee=document.querySelector('.marquee');
+  if(marquee){
+    gsap.from(marquee,{ opacity:0, duration:.6, ease:EASE,
+      scrollTrigger:{ trigger:marquee, start:'top 95%', once:true } });
+  }
+
+  /* ── 7. Nav CTA + logo micro-intro ── */
+  gsap.from('.nav',{ y:-24, opacity:0, duration:.6, ease:EASE, delay:.1 });
+
+  // Recalculate once fonts/images settle so triggers align.
+  window.addEventListener('load', function(){ ScrollTrigger.refresh(); });
+
+  /* ── FAILSAFE — never leave content stuck invisible ──
+     A very fast jump-scroll can skip a ScrollTrigger.batch onEnter for
+     trailing/staggered items. This sweep forces any GSAP-animated element
+     already ABOVE the viewport (i.e. the user has clearly passed it) back to
+     its visible resting state. Runs debounced on scroll and once after load. */
+  var GUARDED = '.svc,.teaser,.value-row,.eco,.marquee,.step,.panel,.contact-info,.form,.founder';
+  function failsafeSweep(){
+    var vt = -40; // small slack above the top edge
+    gsap.utils.toArray(GUARDED).forEach(function(el){
+      var b = el.getBoundingClientRect();
+      if(b.bottom < vt && parseFloat(getComputedStyle(el).opacity) < 0.98){
+        gsap.killTweensOf(el);                 // stop any in-flight/paused entrance tween
+        gsap.set(el,{ opacity:1, y:0, x:0, scale:1, clearProps:'filter' });
+      }
+    });
+  }
+  var fsT;
+  addEventListener('scroll', function(){ clearTimeout(fsT); fsT=setTimeout(failsafeSweep, 160); }, {passive:true});
+  addEventListener('scrollend', failsafeSweep);           // fires after a jump/settle in modern browsers
+  ScrollTrigger.addEventListener && ScrollTrigger.addEventListener('scrollEnd', failsafeSweep);
+  window.addEventListener('load', function(){ setTimeout(failsafeSweep, 400); });
 })();
 </script>
 </body>
