@@ -442,14 +442,15 @@
 <!-- GSAP 3 + ScrollTrigger (CDN, pinned) — cinematic scroll choreography -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<!-- Lenis smooth scroll (studio-freight) — buttery inertia, integrated with ScrollTrigger. UMD global: Lenis -->
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- NOTE: Lenis smooth-scroll retiré après retour device — son hijack de la
+     molette (double RAF avec deux bases de temps gsap.ticker/rAF) rendait le
+     scroll quasi mort (12 crans ≈ 30px). Scroll NATIF + ScrollTrigger : tous
+     les effets visuels restent, et le scroll répond toujours. -->
 
 <script>
 function go(e,id){if(e)e.preventDefault();var el=document.getElementById(id);if(!el)return;
   var y=el.getBoundingClientRect().top+window.pageYOffset-70;
-  if(window.__lenis){window.__lenis.scrollTo(y,{duration:1.2});}
-  else{window.scrollTo({top:y,behavior:'smooth'});}}
+  window.scrollTo({top:y,behavior:'smooth'});}
 addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',scrollY>30);},{passive:true});
 function toggleMenu(){document.getElementById('nav-links').classList.toggle('open');}
 function closeMenu(){document.getElementById('nav-links').classList.remove('open');}
@@ -573,39 +574,17 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
 })();
 
 /* ══════════════════════════════════════════════════════════════
-   LENIS SMOOTH SCROLL + CUSTOM NEON CURSOR + MAGNETIC/TILT.
-   Everything guarded: reduced-motion → native scroll, no cursor;
+   CUSTOM NEON CURSOR + MAGNETIC/TILT. (Scroll = NATIF — Lenis retiré,
+   voir la note au bloc CDN : son hijack molette tuait le scroll.)
+   Everything guarded: reduced-motion → no cursor;
    coarse/touch pointer → no cursor, no magnet.
    ══════════════════════════════════════════════════════════════ */
 (function(){
   var REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var FINE   = matchMedia('(pointer: fine)').matches && matchMedia('(hover: hover)').matches;
 
-  /* ---- Lenis smooth scroll ---- */
+  /* ---- Native scroll ---- */
   window.__lenis=null;
-  if(!REDUCE && window.Lenis){
-    try{
-      var lenis=new Lenis({ duration:1.1, smoothWheel:true, wheelMultiplier:1.0, touchMultiplier:1.4,
-        easing:function(t){return Math.min(1,1.001-Math.pow(2,-10*t));} });
-      window.__lenis=lenis;
-      // integrate with ScrollTrigger if present (cinematic layer registers it)
-      function hookST(){
-        if(window.ScrollTrigger){
-          lenis.on('scroll',ScrollTrigger.update);
-          if(window.gsap){
-            gsap.ticker.add(function(time){ lenis.raf(time*1000); });
-            gsap.ticker.lagSmoothing(0);
-            return true;
-          }
-        }
-        return false;
-      }
-      if(!hookST()){
-        function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
-        requestAnimationFrame(raf);
-      }
-    }catch(e){ window.__lenis=null; }
-  }
 
   /* ---- Custom neon cursor + magnetic + tilt (fine pointer only) ---- */
   if(!REDUCE && FINE){
@@ -924,10 +903,12 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
       scrollTrigger:{ trigger:heroEl, start:'top top', end:'bottom top', scrub:.8, pin:false } });
   }
 
-  /* ── 9. HORIZONTAL-SCROLL ECOSYSTEM RAIL ──
-     Pin #ecosysteme and translate the card rail horizontally as the user
-     scrolls vertically. Wide fine-pointer screens only; everywhere else the
-     centered .eco chip cloud (universal fallback) stays. */
+  /* ── 9. ECOSYSTEM RAIL — UNPINNED scrub ──
+     Device feedback: the pinned version froze the page ("no scrolling") —
+     users hate a stuck viewport. The rail now slides horizontally AS the
+     section passes through the viewport (no pin, page never sticks). Wide
+     fine-pointer screens only; everywhere else the centered .eco chip cloud
+     (universal fallback) stays. */
   var eco = document.getElementById('ecosysteme');
   var rail = eco && eco.querySelector('.eco-rail');
   var FINEPTR = window.matchMedia('(pointer:fine)').matches;
@@ -936,20 +917,15 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
     eco.classList.add('hscroll');
     // measure how far the rail overflows the viewport
     var getShift=function(){ return Math.max(0, rail.scrollWidth - innerWidth); };
-    var prog = eco.querySelector('.hscroll-progress');
     ScrollTrigger.create({
-      trigger:eco, start:'top top', end:function(){ return '+='+(getShift()+innerHeight*0.6); },
-      pin:true, scrub:.7, invalidateOnRefresh:true, anticipatePin:1,
+      trigger:eco, start:'top bottom', end:'bottom top', scrub:.7, invalidateOnRefresh:true,
       onUpdate:function(self){
         var shift=getShift();
         gsap.set(rail,{ x:-shift*self.progress });
         if(eco) eco.style.setProperty('--hp', self.progress.toFixed(3));
       }
     });
-    // cards stay visible (they live inside a pinned section that's on-screen
-    // whenever it's active) — a subtle upward drift on first approach adds life
-    // WITHOUT ever risking a stuck opacity:0 (uses a self-clearing 'to' from a
-    // JS-set start state, cleared on complete).
+    // subtle upward drift on first approach — never risks stuck opacity:0
     gsap.set(rail.children,{ y:26, opacity:.35 });
     gsap.to(rail.children,{ y:0, opacity:1, duration:.6, ease:EASE, stagger:.05, clearProps:'opacity',
       scrollTrigger:{ trigger:eco, start:'top 78%', once:true },
