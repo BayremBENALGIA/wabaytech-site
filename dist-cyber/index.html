@@ -40,7 +40,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <!-- version query = cache-buster: heuristic caches (no-Cache-Control proxies,
      some browsers) can otherwise serve a stale stylesheet after a deploy -->
-<link rel="stylesheet" href="styles.css?v=fullmagic-3d-1"/>
+<link rel="stylesheet" href="styles.css?v=fullmagic-wm-3"/>
 <!-- No-JS safety net: the .reveal system (and the GSAP layer) both rely on
      JavaScript to become visible. If scripting is off, force every animated
      element into its visible resting state so all content is readable. -->
@@ -104,6 +104,14 @@
 <!-- ── Hero ─────────────────────────────────────────────────────── -->
 <section id="top" class="hero">
   <div class="hero-inner">
+    <!-- Monumental brand wordmark — assembled letter-by-letter by the robot
+         (GSAP weld build, see the cinematic layer). Fully visible by default:
+         the hidden "from" states are set ONLY inside the motion guard, so
+         no-JS / reduced-motion / CDN-blocked users always read WABAYTECH. -->
+    <div class="hero-wordmark" aria-hidden="true">
+      <span class="wm-l" style="--wi:0">W</span><span class="wm-l" style="--wi:1">A</span><span class="wm-l" style="--wi:2">B</span><span class="wm-l" style="--wi:3">A</span><span class="wm-l" style="--wi:4">Y</span><span class="wm-l" style="--wi:5">T</span><span class="wm-l" style="--wi:6">E</span><span class="wm-l" style="--wi:7">C</span><span class="wm-l" style="--wi:8">H</span>
+    </div>
+    <div class="hero-copy">
     <div class="hero-pill reveal"><span class="dot"></span>Studio indépendant · Tunis &amp; Paris · Disponible pour nouveaux projets</div>
     <h1 class="reveal">Du logiciel qui<br/>tient en <span class="accent glitch" data-text="production.">production.</span></h1>
     <p class="hero-sub reveal">Studio indépendant. On code, on déploie, on opère nos propres produits. On sait ce que ça coûte de tenir une app à 99,9 % — et on l'applique aussi aux vôtres. Mobile, web, ERP, IA sur mesure.</p>
@@ -126,6 +134,7 @@
       <span class="sep" aria-hidden="true"></span>
       <span>SARL Tunis · <strong>D-U-N-S</strong> vérifié</span>
     </div>
+    </div><!-- /.hero-copy — capped ≥1100px so the 3D robot stays clear of the headline -->
   </div>
   <!-- Interactive 3D (Spline robot) — right half of the hero, cursor-tracked.
        Ported from the React SplineScene/Spotlight reference to the vanilla
@@ -712,7 +721,7 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
     return { chars:chars, accent:accent };
   }
 
-  var heroTl = gsap.timeline({ defaults:{ ease:EASE } });
+  var heroTl = gsap.timeline({ defaults:{ ease:EASE }, paused:true });
   var h1 = document.querySelector('.hero h1');
   var split = splitChars(h1);
   var chars = split.chars, accent = split.accent;
@@ -722,9 +731,83 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   var hudCells = gsap.utils.toArray('.hero-hud .cell');
   var trust = document.querySelector('.hero-trust');
 
-  if(pill) heroTl.from(pill,{ y:18, opacity:0, duration:.55 }, 0);
+  /* ── 1a. WORDMARK BUILD — the robot CONSTRUCTS the WABAYTECH logo.
+     Letters assemble left→right: each flies in from below-right with
+     rotation + blur, snaps in with back.out, and fires a 120ms WELD FLASH
+     (brightness/drop-shadow pulse) + 4 spark particles on lock-in. A thin
+     laser line originates from the robot side (right) and retargets the
+     letter being placed — ONLY when html.spline-on (robot present).
+     All hidden states are set HERE (inside the motion guard), so no-JS /
+     reduced-motion render the wordmark fully visible statically. ── */
+  var heroSec  = document.querySelector('.hero');
+  var wordmark = document.querySelector('.hero-wordmark');
+  var wmLetters = wordmark ? gsap.utils.toArray(wordmark.querySelectorAll('.wm-l')) : [];
+  var WM_FX = 140, WM_FY = 90;                       // fly-in offsets (below-right)
+
+  var laser = null;
+  function laserEl(){
+    if(laser || !heroSec) return laser;
+    laser = document.createElement('span');
+    laser.className = 'wm-laser'; laser.setAttribute('aria-hidden','true');
+    heroSec.appendChild(laser);
+    return laser;
+  }
+  function laserAim(letter){
+    // the beam only exists when the 3D robot is actually on stage
+    if(!document.documentElement.classList.contains('spline-on')){
+      if(laser) gsap.set(laser,{ opacity:0 }); return;
+    }
+    var el = laserEl(); if(!el) return;
+    var hr = heroSec.getBoundingClientRect(), lr = letter.getBoundingClientRect();
+    // at onStart the letter sits at its from-offset — aim at its FINAL spot
+    var tx = lr.left - hr.left + lr.width/2  - WM_FX;
+    var ty = lr.top  - hr.top  + lr.height/2 - WM_FY;
+    var ox = hr.width * .74, oy = hr.height * .42;   // ≈ robot torso
+    var dx = tx - ox, dy = ty - oy;
+    gsap.to(el,{ left:ox, top:oy, width:Math.sqrt(dx*dx+dy*dy),
+      rotation:Math.atan2(dy,dx)*180/Math.PI, opacity:.95,
+      duration:.12, ease:'power2.out', overwrite:true });
+  }
+  function laserOut(){ if(laser) gsap.to(laser,{ opacity:0, duration:.35, ease:'power2.out', overwrite:true }); }
+  function weld(letter){
+    // WELD FLASH — brief cyan-white glow burst (≈120ms filter pulse)
+    gsap.fromTo(letter,
+      { filter:'brightness(1) drop-shadow(0 0 0 rgba(210,247,255,0))' },
+      { filter:'brightness(2.7) drop-shadow(0 0 18px rgba(210,247,255,.95))',
+        duration:.06, yoyo:true, repeat:1, ease:'power2.in',
+        onComplete:function(){ gsap.set(letter,{ clearProps:'filter' }); } });
+    if(!wordmark) return;
+    // 4 tiny sparks burst outward (GPU transforms only), removed after
+    var wr = wordmark.getBoundingClientRect(), lr = letter.getBoundingClientRect();
+    var cx = lr.left - wr.left + lr.width/2, cy = lr.top - wr.top + lr.height*.72;
+    for(var s=0; s<4; s++){
+      var p = document.createElement('span'); p.className = 'wm-spark';
+      p.style.left = cx+'px'; p.style.top = cy+'px';
+      wordmark.appendChild(p);
+      var a = Math.random()*Math.PI*2, d = 26 + Math.random()*34;
+      gsap.fromTo(p,{ x:0, y:0, opacity:1, scale:1 },
+        { x:Math.cos(a)*d, y:Math.sin(a)*d + 14, opacity:0, scale:.4,
+          duration:.5, ease:'power2.out',
+          onComplete:(function(node){ return function(){ node.remove(); }; })(p) });
+    }
+  }
+  if(wmLetters.length){
+    gsap.set(wmLetters,{ x:WM_FX, y:WM_FY, opacity:0, rotate:16, filter:'blur(10px)' });
+    wmLetters.forEach(function(l,i){
+      heroTl.to(l,{ x:0, y:0, opacity:1, rotate:0, filter:'blur(0px)',
+        duration:.44, ease:'back.out(2.1)',
+        onStart:function(){ laserAim(l); },
+        onComplete:function(){ weld(l); }
+      }, i*.14);
+    });
+    heroTl.add(laserOut, wmLetters.length*.14 + .34);
+  }
+  // the copy cascade starts as the last letters weld in
+  heroTl.addLabel('copy', wmLetters.length ? wmLetters.length*.14 + .18 : 0);
+
+  if(pill) heroTl.from(pill,{ y:18, opacity:0, duration:.55 }, 'copy');
   if(chars.length) heroTl.from(chars,{ y:44, opacity:0, filter:'blur(12px)', rotateX:-60, duration:.62,
-    stagger:{ each:.028, from:'start' }, ease:'power4.out' }, .1);
+    stagger:{ each:.028, from:'start' }, ease:'power4.out' }, 'copy+=.12');
   if(sub) heroTl.from(sub,{ y:20, opacity:0, duration:.6 }, '-=.3');
   if(actions) heroTl.from(actions,{ y:18, opacity:0, duration:.5 }, '-=.35');
   if(hudCells.length) heroTl.from(hudCells,{ y:24, opacity:0, duration:.5, stagger:.07 }, '-=.3');
@@ -755,8 +838,25 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
     window.addEventListener('pagehide',function(){ clearInterval(glitchIv); });
   }
 
-  // brief particle-network intensification on load
-  if(typeof window.__wbParticleBoost==='function') window.__wbParticleBoost(2.1, 1400);
+  /* ── 1b. START — the hero sequence (wordmark build → copy cascade) begins
+     AFTER the intro overlay finishes (or immediately when the intro was
+     skipped / already seen). A hard timeout guarantees it always plays. ── */
+  var heroStarted = false;
+  function startHero(){
+    if(heroStarted) return; heroStarted = true;
+    heroTl.play();
+    if(typeof window.__wbParticleBoost==='function') window.__wbParticleBoost(2.1, 1400);
+  }
+  var introEl = document.getElementById('intro');
+  if(introEl && !introEl.classList.contains('done')){
+    var introMo = new MutationObserver(function(){
+      if(introEl.classList.contains('done')){ introMo.disconnect(); startHero(); }
+    });
+    introMo.observe(introEl,{ attributes:true, attributeFilter:['class'] });
+    setTimeout(function(){ try{ introMo.disconnect(); }catch(e){} startHero(); }, 5600); // intro auto-ends at 4.3s
+  } else {
+    startHero();
+  }
 
   // continuous parallax drift on neon grid floor + bg glow, linked to scroll
   var grid = document.querySelector('.gridfloor');
