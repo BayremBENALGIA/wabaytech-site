@@ -753,7 +753,10 @@ html.hscroll-on #ecosysteme.hscroll .hscroll-progress::after{content:"";position
    fine-pointer + WebGL + motion-ok clients. The robot melts into the plasma
    via a left-edge mask; hero copy stays above it (z2 vs z1). */
 .hero-3d,.hero-spotlight{display:none}
-html.spline-on .hero-3d{display:block;position:absolute;top:0;right:0;bottom:0;width:54%;z-index:1;
+/* pane pinned hard right and dropped BELOW the wordmark baseline so the
+   robot never drifts toward center nor hides behind the WABAYTECH letters
+   (client fix: « le robot est un peu à gauche et se fait cacher ») */
+html.spline-on .hero-3d{display:block;position:absolute;top:clamp(112px,17vh,172px);right:0;bottom:0;width:48%;z-index:1;
   -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 26%);
   mask-image:linear-gradient(90deg,transparent 0,#000 26%)}
 html.spline-on .hero-3d canvas{width:100%;height:100%;display:block;opacity:0;transition:opacity 1.4s ease}

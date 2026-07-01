@@ -37,10 +37,18 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<!-- perf: warm the third-party origins early — GSAP (cdnjs), the Spline
+     runtime (unpkg, ESM/CORS) and the 3D scene host (prod.spline.design)
+     so the hero robot starts downloading without extra handshakes -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin/>
+<link rel="preconnect" href="https://unpkg.com" crossorigin/>
+<link rel="preconnect" href="https://prod.spline.design" crossorigin/>
+<link rel="dns-prefetch" href="https://unpkg.com"/>
+<link rel="dns-prefetch" href="https://prod.spline.design"/>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <!-- version query = cache-buster: heuristic caches (no-Cache-Control proxies,
      some browsers) can otherwise serve a stale stylesheet after a deploy -->
-<link rel="stylesheet" href="styles.css?v=fullmagic-nav-2"/>
+<link rel="stylesheet" href="styles.css?v=robot-fix-1"/>
 <!-- No-JS safety net: the .reveal system (and the GSAP layer) both rely on
      JavaScript to become visible. If scripting is off, force every animated
      element into its visible resting state so all content is readable. -->
@@ -785,7 +793,15 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
     // at onStart the letter sits at its from-offset — aim at its FINAL spot
     var tx = lr.left - hr.left + lr.width/2  - WM_FX;
     var ty = lr.top  - hr.top  + lr.height/2 - WM_FY;
-    var ox = hr.width * .74, oy = hr.height * .42;   // ≈ robot torso
+    // origin = robot torso, derived from the LIVE #hero3d pane rect so any
+    // pane reposition (width/top tweaks) keeps the beam anchored on the robot
+    var pane = document.getElementById('hero3d');
+    var ox = hr.width * .76, oy = hr.height * .5;    // fallback if pane missing
+    if(pane){
+      var pr = pane.getBoundingClientRect();
+      ox = pr.left - hr.left + pr.width * .52;
+      oy = pr.top  - hr.top  + pr.height * .5;
+    }
     var dx = tx - ox, dy = ty - oy;
     gsap.to(el,{ left:ox, top:oy, width:Math.sqrt(dx*dx+dy*dy),
       rotation:Math.atan2(dy,dx)*180/Math.PI, opacity:.95,
