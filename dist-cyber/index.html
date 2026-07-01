@@ -40,7 +40,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <!-- version query = cache-buster: heuristic caches (no-Cache-Control proxies,
      some browsers) can otherwise serve a stale stylesheet after a deploy -->
-<link rel="stylesheet" href="styles.css?v=fullmagic-wm-3"/>
+<link rel="stylesheet" href="styles.css?v=fullmagic-nav-2"/>
 <!-- No-JS safety net: the .reveal system (and the GSAP layer) both rely on
      JavaScript to become visible. If scripting is off, force every animated
      element into its visible resting state so all content is readable. -->
@@ -475,6 +475,29 @@ addEventListener('scroll',function(){document.getElementById('nav').classList.to
 function toggleMenu(){document.getElementById('nav-links').classList.toggle('open');}
 function closeMenu(){document.getElementById('nav-links').classList.remove('open');}
 document.addEventListener('click',function(e){var n=document.getElementById('nav-links'),h=document.getElementById('ham');if(n.classList.contains('open')&&!n.contains(e.target)&&!h.contains(e.target))n.classList.remove('open');});
+/* ── Nav active-section spy — highlights the link of the section in view.
+   rAF-throttled scroll pass over 5 offsets (cheap, passive, no-JS safe:
+   without JS the nav simply has no highlight). ── */
+(function(){
+  var ids=['produits','services','approche','process','contact'],map=[];
+  ids.forEach(function(id){
+    var s=document.getElementById(id),l=document.querySelector('.nav-links a[href="#'+id+'"]');
+    if(s&&l)map.push({sec:s,link:l});
+  });
+  if(!map.length)return;
+  var cur,tick=false;
+  function spy(){
+    tick=false;
+    var y=scrollY+innerHeight*.38,act=null;
+    for(var i=0;i<map.length;i++){ if(map[i].sec.offsetTop<=y)act=map[i]; }
+    if(act!==cur){ cur=act; map.forEach(function(m){ m.link.classList.toggle('active',m===act); }); }
+  }
+  function queue(){ if(!tick){ tick=true; requestAnimationFrame(spy); } }
+  addEventListener('scroll',queue,{passive:true});
+  addEventListener('resize',queue,{passive:true});
+  window.addEventListener('load',spy);
+  spy();
+})();
 var io=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
 document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
 function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');c.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');}

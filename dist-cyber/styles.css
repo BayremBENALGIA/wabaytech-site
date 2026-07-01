@@ -140,31 +140,75 @@ html.gl-on #bgcanvas{opacity:.5}
   box-shadow:0 0 0 1px rgba(255,43,208,.4),0 8px 30px rgba(255,43,208,.28)}
 .btn-magenta:hover{transform:translateY(-2px);box-shadow:0 12px 44px rgba(255,43,208,.5)}
 
-/* ---- Navigation ------------------------------------------ */
+/* ---- Navigation — magistral cyber bar --------------------- */
+/* At top: airy translucent veil. Scrolled: deep glass (heavy blur + saturate),
+   soft glow shadow and a 1px neon gradient hairline (cyan→violet→magenta)
+   with a slow shimmer. State changes are smooth; reduced-motion users keep
+   the styles (the global reduce rule freezes the animations). */
 .nav{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;
   justify-content:space-between;gap:20px;padding:16px var(--pad);
-  background:rgba(4,6,12,.55);backdrop-filter:blur(14px);
-  border-bottom:1px solid transparent;transition:background .3s,border-color .3s,padding .3s}
-.nav.scrolled{background:rgba(4,6,12,.86);border-color:var(--line-strong);padding:11px var(--pad)}
+  background:linear-gradient(180deg,rgba(4,6,12,.55),rgba(4,6,12,.16));
+  backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+  border-bottom:1px solid transparent;
+  transition:background .35s,box-shadow .35s,padding .3s,backdrop-filter .35s}
+/* neon gradient hairline + shimmer — revealed once the bar condenses */
+.nav::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--cyan) 18%,var(--violet) 50%,var(--magenta) 82%,transparent);
+  background-size:220% 100%;box-shadow:0 0 14px rgba(25,227,255,.35);
+  opacity:0;transition:opacity .45s;animation:navShimmer 7s linear infinite}
+@keyframes navShimmer{from{background-position:0% 0}to{background-position:220% 0}}
+.nav.scrolled{background:rgba(4,6,12,.82);padding:11px var(--pad);
+  backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);
+  box-shadow:0 14px 44px rgba(2,5,14,.55)}
+.nav.scrolled::after{opacity:.85}
 .nav-inner{width:100%;max-width:var(--max);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px}
-.nav-logo{display:flex;align-items:center;gap:11px}
-.nav-logo img{height:31px;width:auto;filter:drop-shadow(0 0 11px rgba(25,227,255,.6))}
+/* logo — alive: micro-tilt + glow pulse on hover, faint scanline sweep ~8s */
+.nav-logo{display:flex;align-items:center;gap:11px;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.nav-logo:hover{transform:translateY(-1px)}
+.nav-logo img{height:31px;width:auto;filter:drop-shadow(0 0 11px rgba(25,227,255,.6));
+  transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+.nav-logo:hover img{transform:rotate(-5deg) scale(1.06);animation:logoPulse 1.5s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 11px rgba(25,227,255,.6))}
+  50%{filter:drop-shadow(0 0 24px rgba(25,227,255,1))}}
 .nav-logo-text{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.16em;
-  color:#fff;text-transform:uppercase}
+  color:#fff;text-transform:uppercase;
+  background-image:linear-gradient(110deg,#fff 0%,#fff 40%,#a9ecff 47%,#ffffff 50%,#a9ecff 53%,#fff 60%,#fff 100%);
+  background-size:320% 100%;background-position:120% 0;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:logoSweep 8s cubic-bezier(.55,0,.45,1) infinite}
+@keyframes logoSweep{0%,76%{background-position:120% 0}94%,100%{background-position:-60% 0}}
 .nav-links{display:flex;align-items:center;gap:30px}
 .nav-links a{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--fg-mute);position:relative;transition:color .2s;padding:4px 0}
-.nav-links a::after{content:"";position:absolute;left:0;bottom:-3px;width:0;height:1px;
-  background:var(--accent);box-shadow:0 0 8px var(--accent);transition:width .25s}
-.nav-links a:hover{color:#fff}
-.nav-links a:hover::after{width:100%}
+  color:var(--fg-mute);position:relative;padding:4px 0;
+  transition:color .2s,letter-spacing .3s,text-shadow .3s}
+/* neon underline — gradient bar scaling out from the CENTER */
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1.5px;border-radius:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet) 50%,var(--magenta));
+  box-shadow:0 0 10px rgba(25,227,255,.55);
+  transform:scaleX(0);transform-origin:center;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.nav-links a:hover{color:#fff;letter-spacing:.15em;text-shadow:0 0 12px rgba(25,227,255,.5)}
+.nav-links a:hover::after{transform:scaleX(1)}
+/* active-section spy — JS toggles .active on the link of the section in view */
+.nav-links a.active{color:#fff;text-shadow:0 0 12px rgba(25,227,255,.45)}
+.nav-links a.active::after{transform:scaleX(1)}
 .nav-links a.nav-v{color:var(--cyan)}
 .nav-cta{display:inline-flex;align-items:center;gap:9px;padding:10px 18px;border-radius:8px;
   font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
   color:#02060c;background-image:linear-gradient(90deg,#37e9ff,#6ad6ff 22%,#b07bff 48%,#ff5fd6 70%,#6ad6ff 88%,#37e9ff);
-  background-size:200% auto;animation:rgbflow 4s linear infinite;
+  background-size:200% auto;position:relative;overflow:hidden;
+  animation:rgbflow 4s linear infinite,ctaBreath 3.8s ease-in-out infinite;
   box-shadow:0 0 22px rgba(120,150,255,.4);transition:transform .2s,box-shadow .25s}
+/* idle glow breathing (very subtle) — frozen under reduced-motion */
+@keyframes ctaBreath{0%,100%{filter:drop-shadow(0 0 5px rgba(120,150,255,.22))}
+  50%{filter:drop-shadow(0 0 13px rgba(140,160,255,.5))}}
+/* hover shine sweep across the gradient */
+.nav-cta::before{content:"";position:absolute;top:-4px;bottom:-4px;left:-30%;width:46%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.65) 50%,transparent);
+  transform:translateX(-160%) skewX(-18deg);transition:transform .6s cubic-bezier(.4,0,.2,1)}
+.nav-cta:hover::before{transform:translateX(340%) skewX(-18deg)}
 .nav-cta:hover{transform:translateY(-1px);box-shadow:0 0 34px rgba(25,227,255,.6)}
+/* press feedback — !important so it also wins over the magnetic inline transform */
+.nav-cta:active{transform:scale(.95)!important}
 .nav-cta svg{transition:transform .25s}
 .nav-cta:hover svg{transform:translateX(3px)}
 .nav-hamburger{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;cursor:pointer;
@@ -408,7 +452,7 @@ html.gl-on #bgcanvas{opacity:.5}
     border-bottom:1px solid var(--line-strong);transform:translateY(-130%);transition:transform .35s;z-index:55}
   .nav-links.open{transform:none}
   /* generous tap targets on the mobile menu (>=44px) */
-  .nav-links a{padding:11px 0;font-size:13px;width:100%}
+  .nav-links a{padding:13px 0;font-size:13px;width:100%}
   .nav-cta{display:none}
   .hero-hud{grid-template-columns:1fr 1fr}
   .stats{grid-template-columns:1fr 1fr}
@@ -697,6 +741,9 @@ html.hscroll-on #ecosysteme.hscroll .hscroll-progress::after{content:"";position
   .cursor-dot,.cursor-ring,#veloglow,#scrollbar{display:none!important}
   html.gsap-on .hero h1.swept .char{animation:none;-webkit-text-fill-color:#e8f3fb;background:none}
   html.gsap-on .hero h1.swept .accent .char{-webkit-text-fill-color:var(--cyan)}
+  /* nav: keep the magistral styles, drop the motion — solid white wordmark */
+  .nav-logo-text{animation:none;background:none;-webkit-text-fill-color:#fff}
+  .nav::after,.nav-cta,.nav-logo:hover img{animation:none}
 }
 
 /* ---- Interactive 3D hero (Spline robot) + spotlight ----------------------
