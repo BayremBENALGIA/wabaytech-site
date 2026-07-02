@@ -48,7 +48,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <!-- version query = cache-buster: heuristic caches (no-Cache-Control proxies,
      some browsers) can otherwise serve a stale stylesheet after a deploy -->
-<link rel="stylesheet" href="styles.css?v=robot-fix-1"/>
+<link rel="stylesheet" href="styles.css?v=perf-mobile-1"/>
 <!-- No-JS safety net: the .reveal system (and the GSAP layer) both rely on
      JavaScript to become visible. If scripting is off, force every animated
      element into its visible resting state so all content is readable. -->
@@ -512,10 +512,13 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
 /* ── Background particle network ──────────────────────────────── */
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // MOBILE PERF MODE — même détecteur que le reste du site : réseau réduit
+  // (40 points max, dpr 1, pas de réaction scroll) pour un fond léger et fluide.
+  var MOBILE=matchMedia('(max-width: 899px), (pointer: coarse)').matches;
   var cv=document.getElementById('bgcanvas');if(!cv)return;
-  var ctx=cv.getContext('2d'),W=0,H=0,dpr=Math.min(devicePixelRatio||1,2),parts=[],mouse={x:-999,y:-999},raf=0,boost=1;
+  var ctx=cv.getContext('2d'),W=0,H=0,dpr=MOBILE?1:Math.min(devicePixelRatio||1,2),parts=[],mouse={x:-999,y:-999},raf=0,boost=1;
   function size(){W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
-    var n=Math.min(Math.round(W*H/13000),120);parts=[];for(var i=0;i<n;i++){parts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,m:Math.random()<.18});}}
+    var n=Math.min(Math.round(W*H/13000),MOBILE?40:120);parts=[];for(var i=0;i<n;i++){parts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,m:Math.random()<.18});}}
   function frame(){ctx.clearRect(0,0,W,H);
     if(boost>1.001)boost+=(1-boost)*.04;else boost=1; // ease boost back to rest
     var link=18000*boost,linkA=.32*Math.min(boost,1.8),spd=boost;
@@ -534,8 +537,8 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   size();start();
   // Public hook — briefly intensify the network (used by the GSAP hero timeline on load).
   window.__wbParticleBoost=function(mult){ if(reduce)return; boost=Math.max(boost,mult||2); };
-  // Scroll-velocity reaction: fast scrolling energises the network.
-  if(!reduce){
+  // Scroll-velocity reaction: fast scrolling energises the network (desktop only).
+  if(!reduce && !MOBILE){
     var lastY=scrollY,lastT=performance.now();
     addEventListener('scroll',function(){
       var now=performance.now(),dy=Math.abs(scrollY-lastY),dt=Math.max(now-lastT,16);
@@ -553,6 +556,9 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
 (function(){
   var REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(REDUCE) return;
+  // MOBILE PERF MODE — le shader plein écran est le coût GPU n°1 sur téléphone :
+  // on ne l'initialise JAMAIS là (le fond garde #bgfx gradient + particules).
+  if(matchMedia('(max-width: 899px), (pointer: coarse)').matches) return;
   var cv=document.getElementById('glcanvas'); if(!cv) return;
   var gl=null;
   try{ gl=cv.getContext('webgl',{antialias:false,alpha:true,premultipliedAlpha:false,powerPreference:'low-power'})
@@ -720,6 +726,10 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   document.documentElement.classList.add('gsap-on');
 
   var EASE = 'power3.out';
+  // MOBILE PERF MODE — même détecteur que le reste du site : les tweens
+  // SCRUBBÉS (parallax par frame) sont coupés sur mobile ; les reveals
+  // one-shot et le build du wordmark (courts, GPU-only) restent — c'est l'âme.
+  var MOBILE = window.matchMedia('(max-width: 899px), (pointer: coarse)').matches;
 
   /* ── 1. HERO — CHARACTER-by-character headline, gradient sweep,
          accent scramble, staggered HUD, grid parallax ── */
@@ -898,13 +908,14 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   }
 
   // continuous parallax drift on neon grid floor + bg glow, linked to scroll
+  // (desktop only — per-frame scrub work is cut in MOBILE perf mode)
   var grid = document.querySelector('.gridfloor');
-  if(grid){
+  if(grid && !MOBILE){
     gsap.to(grid,{ yPercent:14, ease:'none',
       scrollTrigger:{ trigger:document.body, start:'top top', end:'bottom bottom', scrub:1 } });
   }
   var bgfx = document.getElementById('bgfx');
-  if(bgfx){
+  if(bgfx && !MOBILE){
     gsap.to(bgfx,{ yPercent:-8, ease:'none',
       scrollTrigger:{ trigger:document.body, start:'top top', end:'bottom bottom', scrub:1.4 } });
   }
@@ -944,10 +955,11 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
       gsap.from(copy.children,{ y:26, opacity:0, duration:.6, ease:EASE, stagger:.06,
         scrollTrigger:{ trigger:panel, start:'top 76%' } });
     }
-    // parallax the neon node diagram
+    // parallax the neon node diagram (scrub = desktop only; the one-shot
+    // line/dot draw reveals below stay everywhere)
     if(visual){
       var ring = visual.querySelector('.ring');
-      if(ring){
+      if(ring && !MOBILE){
         gsap.fromTo(ring,{ yPercent:-6, scale:1.04 },{ yPercent:6, ease:'none',
           scrollTrigger:{ trigger:panel, start:'top bottom', end:'bottom top', scrub:1 } });
       }
@@ -990,13 +1002,15 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   /* ── 5. PROCESS TIMELINE — connector rail DRAWS with scrub, medallions pop ── */
   var proc = document.querySelector('.process');
   if(proc){
-    // Build a JS-driven rail overlay we can scale with scrub (CSS ::before stays as static fallback).
-    var rail = document.createElement('span');
-    rail.className='proc-rail-draw'; rail.setAttribute('aria-hidden','true');
-    proc.appendChild(rail);
-    gsap.fromTo(rail,{ scaleX:0 },{ scaleX:1, ease:'none',
-      scrollTrigger:{ trigger:proc, start:'top 78%', end:'bottom 60%', scrub:.6 } });
-
+    // Scrubbed rail overlay = desktop only (CSS hides it ≤960 anyway); the
+    // one-shot step/medallion reveals below stay everywhere.
+    if(!MOBILE){
+      var rail = document.createElement('span');
+      rail.className='proc-rail-draw'; rail.setAttribute('aria-hidden','true');
+      proc.appendChild(rail);
+      gsap.fromTo(rail,{ scaleX:0 },{ scaleX:1, ease:'none',
+        scrollTrigger:{ trigger:proc, start:'top 78%', end:'bottom 60%', scrub:.6 } });
+    }
     var steps = gsap.utils.toArray('.process .step');
     steps.forEach(function(step,i){
       var medallion = step.querySelector('.no');
