@@ -48,7 +48,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <!-- version query = cache-buster: heuristic caches (no-Cache-Control proxies,
      some browsers) can otherwise serve a stale stylesheet after a deploy -->
-<link rel="stylesheet" href="styles.css?v=design-aug1"/>
+<link rel="stylesheet" href="styles.css?v=trans-aug2"/>
 <!-- No-JS safety net: the .reveal system (and the GSAP layer) both rely on
      JavaScript to become visible. If scripting is off, force every animated
      element into its visible resting state so all content is readable. -->
@@ -1115,16 +1115,79 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
       scrollTrigger:{ trigger:document.body, start:'top top', end:'bottom bottom', scrub:1.4 } });
   }
 
-  /* ── 2. GENERIC SECTION REVEALS — headings + rows on scroll ──
-     TOUT en fromTo + once:true : un 2e onEnter de batch recréait un .from()
-     pendant l'entrée → GSAP mémorisait l'état INTERMÉDIAIRE (y:44 scale:.965)
-     comme état final (cartes 2-3 figées décalées). fromTo est idempotent,
-     once:true supprime le re-onEnter, clearProps nettoie l'inline style. ── */
+  /* ── 2. SECTION HANDOFFS — chaque tête de section joue UNE timeline
+     coordonnée (plus de reveals indépendants désynchronisés) :
+     lisière néon qui se dessine + comète → eyebrow → BLOCK-WIPE du titre
+     → lede. Le wipe porte le concept « Text Reveal Block » (21st) en
+     vanilla par OVERLAY : un bloc dégradé cyan→violet→magenta balaie le
+     titre, le texte se révèle derrière. ZÉRO mutation du texte (pas de
+     split en spans) → le switch i18n, qui remplace innerHTML, ne peut
+     rien casser ; l'overlay est mesuré à l'instant du trigger puis
+     RETIRÉ du DOM. fromTo + once + clearProps (idempotent) ; timeout de
+     sécurité : jamais d'overlay coincé ni de titre laissé invisible. ── */
+
+  // lisière : une ligne néon par section, dessinée au franchissement
+  gsap.utils.toArray('.section').forEach(function(sec){
+    var seam=document.createElement('span');
+    seam.className='sec-seam'; seam.setAttribute('aria-hidden','true');
+    var comet=document.createElement('span'); comet.className='seam-comet';
+    seam.appendChild(comet); sec.appendChild(seam);
+    sec.__wbSeam=seam;
+  });
+
   gsap.utils.toArray('.section-head, .center-head').forEach(function(head){
-    var bits = head.querySelectorAll('.eyebrow, .section-title, .section-lede');
-    gsap.fromTo(bits,{ y:40, opacity:0 },{ y:0, opacity:1, duration:.8, ease:EASE, stagger:.12,
-      scrollTrigger:{ trigger:head, start:'top 82%', once:true },
-      onComplete:function(){ gsap.set(bits,{ clearProps:'transform' }); } });
+    var eyebrow=head.querySelector('.eyebrow');
+    var title=head.querySelector('.section-title');
+    var lede=head.querySelector('.section-lede');
+    var sec=head.closest('.section');
+    var seam=sec&&sec.__wbSeam, comet=seam&&seam.firstChild;
+    // états cachés posés ICI (dans la garde motion) — no-JS/reduced lisent tout
+    if(eyebrow) gsap.set(eyebrow,{ y:14, opacity:0 });
+    if(title)   gsap.set(title,{ opacity:0 });
+    if(lede)    gsap.set(lede,{ y:18, opacity:0 });
+    var played=false;
+    function play(){
+      if(played) return; played=true;
+      var tl=gsap.timeline({ defaults:{ ease:EASE } });
+      if(seam){
+        tl.fromTo(seam,{ scaleX:0 },{ scaleX:1, duration:.7, ease:'power2.out' },0);
+        if(comet){
+          var run=Math.max(seam.offsetWidth-90,0);
+          tl.fromTo(comet,{ x:0, opacity:0 },{ x:run, opacity:1, duration:.6, ease:'power2.inOut', immediateRender:false },.05)
+            .to(comet,{ opacity:0, duration:.2 },'>-.1');
+        }
+      }
+      if(eyebrow) tl.fromTo(eyebrow,{ y:14, opacity:0 },{ y:0, opacity:1, duration:.45 },.05);
+      var wipe=null;
+      if(title){
+        // overlay mesuré MAINTENANT (donc juste après un éventuel switch de
+        // langue) ; géométrie posée une fois, seul scaleX est animé
+        wipe=document.createElement('span');
+        wipe.className='title-wipe'; wipe.setAttribute('aria-hidden','true');
+        title.parentNode.appendChild(wipe);
+        wipe.style.left=title.offsetLeft+'px';
+        wipe.style.top=title.offsetTop+'px';
+        wipe.style.width=title.offsetWidth+'px';
+        wipe.style.height=title.offsetHeight+'px';
+        tl.fromTo(wipe,{ scaleX:0, transformOrigin:'left center' },
+            { scaleX:1, duration:.45, ease:'power4.inOut', immediateRender:false },.14)
+          .set(title,{ opacity:1 })
+          .set(wipe,{ transformOrigin:'right center' })
+          .to(wipe,{ scaleX:0, duration:.45, ease:'power4.inOut' });
+      }
+      if(lede) tl.fromTo(lede,{ y:18, opacity:0 },{ y:0, opacity:1, duration:.5, immediateRender:false }, title?'-=.25':.3);
+      var guard;
+      function finish(){
+        clearTimeout(guard);
+        if(wipe&&wipe.parentNode) wipe.remove();
+        var bits=[eyebrow,title,lede].filter(Boolean);
+        if(bits.length) gsap.set(bits,{ clearProps:'transform,opacity' });
+      }
+      tl.eventCallback('onComplete',finish);
+      // sécurité : >3s sans fin (onglet throttlé, tween tué…) → état final forcé
+      guard=setTimeout(function(){ if(tl.progress()<1) tl.progress(1); },3200);
+    }
+    ScrollTrigger.create({ trigger:head, start:'top 82%', once:true, onEnter:play });
   });
 
   // Batched card/row reveals (y+opacity+slight scale), staggered per group.
@@ -1144,40 +1207,53 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   batchReveal('.values .value-row');
   batchReveal('.contact-info, .form');
 
-  /* ── 3. PRODUCT PANELS (PROXECO / VECTOR) — parallax + draw connectors ── */
+  /* ── 3. PRODUCT PANELS (PROXECO / VECTOR) — entrée THÉÂTRALE : une
+     SEULE timeline resserrée par panel (un seul trigger, plus de 4
+     triggers désynchronisés) : le panel se lève → la copy cascade →
+     le diagramme SVG s'allume (rayons, puis nœuds, puis pièce
+     centrale). fromTo + once + clearProps ; le parallax scrubbé du
+     diagramme reste desktop only. ── */
   gsap.utils.toArray('.panel').forEach(function(panel){
     var copy = panel.querySelector('.panel-copy');
     var visual = panel.querySelector('.panel-visual');
-    // panel entrance
-    gsap.from(panel,{ y:60, opacity:0, duration:.9, ease:EASE,
-      scrollTrigger:{ trigger:panel, start:'top 84%' } });
-    // copy content rises
+    var bits = [];
     if(copy){
-      gsap.from(copy.children,{ y:26, opacity:0, duration:.6, ease:EASE, stagger:.06,
-        scrollTrigger:{ trigger:panel, start:'top 76%' } });
+      if(copy.children[0]) bits = gsap.utils.toArray(copy.children[0].children);
+      if(copy.children[1]) bits.push(copy.children[1]);
     }
-    // parallax the neon node diagram (scrub = desktop only; the one-shot
-    // line/dot draw reveals below stay everywhere)
-    if(visual){
-      var ring = visual.querySelector('.ring');
-      if(ring && !MOBILE){
-        gsap.fromTo(ring,{ yPercent:-6, scale:1.04 },{ yPercent:6, ease:'none',
-          scrollTrigger:{ trigger:panel, start:'top bottom', end:'bottom top', scrub:1 } });
-      }
-      // draw/pulse the connector lines on view
-      var lines = visual.querySelectorAll('.ring line');
-      if(lines.length){
-        // lines radiate from the centre node (200,200) — scale out from there
-        gsap.set(lines,{ transformOrigin:'200px 200px', svgOrigin:'200 200' });
-        gsap.fromTo(lines,{ scale:0, opacity:0 },{ scale:1, opacity:1, duration:.9, ease:'power2.out', stagger:.12,
-          scrollTrigger:{ trigger:panel, start:'top 70%' } });
-      }
-      // node dots pop in
-      var dots = visual.querySelectorAll('.ring circle[r="6"], .ring circle[r="7"]');
-      if(dots.length){
-        gsap.from(dots,{ scale:0, transformOrigin:'center', duration:.5, ease:'back.out(2.4)', stagger:.12,
-          scrollTrigger:{ trigger:panel, start:'top 66%' } });
-      }
+    var ring   = visual && visual.querySelector('.ring');
+    var lines  = visual ? visual.querySelectorAll('.ring line') : [];
+    var dots   = visual ? visual.querySelectorAll('.ring circle[r="6"], .ring circle[r="7"]') : [];
+    var centre = visual && (visual.querySelector('.panel-center svg') || visual.querySelector('.proxeco-logo-float'));
+
+    // états cachés posés à l'INIT (dans la garde motion) — sinon les
+    // sous-éléments flasheraient à l'état final pendant le fondu du panel
+    gsap.set(panel,{ y:54, opacity:0, scale:.97 });
+    if(bits.length) gsap.set(bits,{ y:26, opacity:0 });
+    if(lines.length) gsap.set(lines,{ transformOrigin:'200px 200px', svgOrigin:'200 200', scale:0, opacity:0 });
+    if(dots.length) gsap.set(dots,{ scale:0, transformOrigin:'center' });
+    if(centre) gsap.set(centre,{ scale:.6, opacity:0, transformOrigin:'center' });
+
+    var tl = gsap.timeline({ paused:true, defaults:{ ease:EASE } });
+    tl.to(panel,{ y:0, opacity:1, scale:1, duration:.75 },0);
+    if(bits.length) tl.to(bits,{ y:0, opacity:1, duration:.5, stagger:.06 },.15);
+    if(lines.length) tl.to(lines,{ scale:1, opacity:1, duration:.65, ease:'power2.out', stagger:.09 },.32);
+    if(dots.length) tl.to(dots,{ scale:1, duration:.45, ease:'back.out(2.4)', stagger:.09 },.5);
+    if(centre) tl.to(centre,{ scale:1, opacity:1, duration:.5, ease:'back.out(1.8)' },.55);
+    tl.eventCallback('onComplete',function(){
+      gsap.set([panel].concat(bits),{ clearProps:'transform,opacity' });
+    });
+    ScrollTrigger.create({ trigger:panel, start:'top 84%', once:true,
+      onEnter:function(){
+        tl.play();
+        // sécurité anti-blocage : >4s sans fin → état final forcé
+        setTimeout(function(){ if(tl.progress()<1) tl.progress(1); },4200);
+      } });
+
+    // parallax du diagramme néon (scrub = desktop only)
+    if(ring && !MOBILE){
+      gsap.fromTo(ring,{ yPercent:-6, scale:1.04 },{ yPercent:6, ease:'none',
+        scrollTrigger:{ trigger:panel, start:'top bottom', end:'bottom top', scrub:1 } });
     }
   });
 
@@ -1243,20 +1319,29 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   // stagger, so a fast scroll can never freeze an individual chip mid-tween).
   var eco=document.querySelector('.eco');
   if(eco){
-    gsap.from(eco,{ y:26, opacity:0, duration:.7, ease:EASE,
-      scrollTrigger:{ trigger:eco, start:'top 88%', once:true } });
+    gsap.fromTo(eco,{ y:26, opacity:0 },{ y:0, opacity:1, duration:.7, ease:EASE,
+      scrollTrigger:{ trigger:eco, start:'top 88%', once:true },
+      onComplete:function(){ gsap.set(eco,{ clearProps:'transform,opacity' }); } });
   }
-  // founder quote reveal
+  // founder quote reveal (fromTo+once+clearProps — idempotent)
   var founder=document.querySelector('.founder');
   if(founder){
-    gsap.from(founder,{ y:50, opacity:0, duration:.9, ease:EASE,
-      scrollTrigger:{ trigger:founder, start:'top 82%' } });
+    gsap.fromTo(founder,{ y:50, opacity:0 },{ y:0, opacity:1, duration:.9, ease:EASE,
+      scrollTrigger:{ trigger:founder, start:'top 82%', once:true },
+      onComplete:function(){ gsap.set(founder,{ clearProps:'transform,opacity' }); } });
   }
-  // marquee strip fades in as one unit (the CSS scroll animation continues untouched)
+  // marquee strip — one-shot fade-in everywhere (CSS scroll animation untouched)
+  // + léger drift vertical SCRUBBÉ lié au scroll (entrée/sortie), transform-only,
+  // desktop seulement : le perf mode mobile ne paie aucun travail par frame.
   var marquee=document.querySelector('.marquee');
   if(marquee){
-    gsap.from(marquee,{ opacity:0, duration:.6, ease:EASE,
-      scrollTrigger:{ trigger:marquee, start:'top 95%', once:true } });
+    gsap.fromTo(marquee,{ opacity:0 },{ opacity:1, duration:.6, ease:EASE,
+      scrollTrigger:{ trigger:marquee, start:'top 95%', once:true },
+      onComplete:function(){ gsap.set(marquee,{ clearProps:'opacity' }); } });
+    if(!MOBILE){
+      gsap.fromTo(marquee,{ y:26 },{ y:-26, ease:'none',
+        scrollTrigger:{ trigger:marquee, start:'top bottom', end:'bottom top', scrub:1 } });
+    }
   }
 
   /* ── 7. Nav CTA + logo micro-intro ── */
@@ -1296,6 +1381,11 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
         ecoSec.style.setProperty('--hp', self.progress.toFixed(3));
       }
     });
+    // entrée liée au scroll : le rail monte en scène pendant que la section
+    // franchit le bas du viewport (scrub transform-only, se compose avec le
+    // slide x ci-dessus → trajectoire diagonale d'entrée)
+    gsap.fromTo(rail,{ y:44 },{ y:0, ease:'none',
+      scrollTrigger:{ trigger:ecoSec, start:'top bottom', end:'top 40%', scrub:.8 } });
     // subtle upward drift on first approach — never risks stuck opacity:0
     gsap.set(rail.children,{ y:26, opacity:.35 });
     gsap.to(rail.children,{ y:0, opacity:1, duration:.6, ease:EASE, stagger:.05, clearProps:'opacity',
@@ -1311,7 +1401,13 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
      trailing/staggered items. This sweep forces any GSAP-animated element
      already ABOVE the viewport (i.e. the user has clearly passed it) back to
      its visible resting state. Runs debounced on scroll and once after load. */
-  var GUARDED = '.svc,.teaser,.value-row,.eco,.eco-card,.marquee,.step,.panel,.contact-info,.form,.founder';
+  /* .marquee RETIRÉ de la garde : son drift scrubbé (y:±26 desktop) est un
+     transform permanent lié au scroll — le sweep l'aurait pris pour un état
+     coincé et aurait tué le tween. Son fade-in est fromTo+once (idempotent).
+     AJOUTÉS : les têtes de section (eyebrow/titre/lede) désormais animées
+     par les timelines de handoff — le sweep les remet visibles si un saut
+     brutal court-circuite leur timeline. */
+  var GUARDED = '.svc,.teaser,.value-row,.eco,.eco-card,.step,.panel,.contact-info,.form,.founder,.eyebrow,.section-title,.section-lede';
   var ID_MATRIX = 'matrix(1, 0, 0, 1, 0, 0)';
   function failsafeSweep(){
     var vt = -40; // small slack above the top edge
