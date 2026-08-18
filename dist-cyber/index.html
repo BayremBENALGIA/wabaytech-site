@@ -48,7 +48,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <!-- version query = cache-buster: heuristic caches (no-Cache-Control proxies,
      some browsers) can otherwise serve a stale stylesheet after a deploy -->
-<link rel="stylesheet" href="styles.css?v=trans-aug2"/>
+<link rel="stylesheet" href="styles.css?v=motionsites-2"/>
 <!-- No-JS safety net: the .reveal system (and the GSAP layer) both rely on
      JavaScript to become visible. If scripting is off, force every animated
      element into its visible resting state so all content is readable. -->
@@ -88,6 +88,9 @@
 <div id="scrollbar" aria-hidden="true"></div>
 <div class="cursor-ring" aria-hidden="true"></div>
 <div class="cursor-dot" aria-hidden="true"></div>
+<!-- Grain overlay (Motionsites prisma .noise-overlay) — static SVG feTurbulence,
+     desktop only (cut by the MOBILE PERF block + reduced-motion). -->
+<div class="noise" aria-hidden="true"></div>
 
 <!-- ── Nav ──────────────────────────────────────────────────────── -->
 <nav class="nav" id="nav"><div class="nav-inner">
@@ -116,6 +119,39 @@
 
 <!-- ── Hero ─────────────────────────────────────────────────────── -->
 <section id="top" class="hero">
+  <!-- Ken-Burns backdrop (Motionsites lithos heroZoom) — hero-scoped gradient
+       scene inside the prisma inset frame. Pure decoration, transform-only. -->
+  <div class="hero-bg" aria-hidden="true"></div>
+  <!-- BLUEPRINT LAYER (Motionsites lithos spotlight) — cyan wireframe grid +
+       mono annotations + circuit traces, generated in CSS/SVG (no external
+       image). Revealed ONLY inside a soft R≈260 cursor circle via
+       mask-image: radial-gradient at var(--sx)/var(--sy), lerped in rAF.
+       Desktop fine-pointer + !reduced-motion + !MOBILE (html.spotlight-on). -->
+  <div class="hero-blueprint" aria-hidden="true">
+    <svg class="bp-circuit" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <path d="M60 220 H340 V380 H520" fill="none" stroke="rgba(25,227,255,.5)" stroke-width="1.5"/>
+      <circle cx="60" cy="220" r="4" fill="none" stroke="rgba(25,227,255,.8)" stroke-width="1.5"/>
+      <circle cx="520" cy="380" r="4" fill="rgba(25,227,255,.8)"/>
+      <path d="M1380 160 H1120 V300 H980 V440" fill="none" stroke="rgba(25,227,255,.42)" stroke-width="1.5"/>
+      <circle cx="1380" cy="160" r="4" fill="rgba(25,227,255,.8)"/>
+      <circle cx="980" cy="440" r="4" fill="none" stroke="rgba(25,227,255,.8)" stroke-width="1.5"/>
+      <path d="M180 760 H420 V620 H760 V700 H1040" fill="none" stroke="rgba(25,227,255,.38)" stroke-width="1.5"/>
+      <circle cx="180" cy="760" r="4" fill="none" stroke="rgba(25,227,255,.8)" stroke-width="1.5"/>
+      <circle cx="1040" cy="700" r="4" fill="rgba(25,227,255,.8)"/>
+      <path d="M1300 820 V640 H1180" fill="none" stroke="rgba(25,227,255,.4)" stroke-width="1.5"/>
+      <circle cx="1180" cy="640" r="4" fill="rgba(25,227,255,.8)"/>
+      <rect x="640" y="120" width="180" height="90" fill="none" stroke="rgba(25,227,255,.35)" stroke-width="1" stroke-dasharray="5 4"/>
+      <circle cx="730" cy="165" r="26" fill="none" stroke="rgba(25,227,255,.45)" stroke-width="1"/>
+      <path d="M730 139 v-18 M730 191 v18 M704 165 h-18 M756 165 h18" stroke="rgba(25,227,255,.45)" stroke-width="1"/>
+    </svg>
+    <span class="bp-note" style="top:16%;left:6%">SYS.GRID // 46PX · CALIBRATED</span>
+    <span class="bp-note" style="top:30%;right:8%">NODE_07 → ONLINE</span>
+    <span class="bp-note" style="top:52%;left:10%">X:0412 · Y:0268 · θ:12.4°</span>
+    <span class="bp-note" style="bottom:20%;right:14%">BLUEPRINT v2.4 // WABAYTECH</span>
+    <span class="bp-note" style="bottom:9%;left:32%">TRACE.OK — 99.9% UPTIME MESH</span>
+    <span class="bp-reticle" style="top:24%;left:28%"></span>
+    <span class="bp-reticle" style="bottom:26%;right:30%"></span>
+  </div>
   <div class="hero-inner">
     <!-- Monumental brand wordmark — assembled letter-by-letter by the robot
          (GSAP weld build, see the cinematic layer). Fully visible by default:
@@ -172,7 +208,11 @@
 
 <!-- ── Studio + brands ──────────────────────────────────────────── -->
 <section id="studio" class="section"><div class="container">
-  <div class="section-head">
+  <!-- MANIFESTO (Motionsites prisma About) — giant centered declaration.
+       The .manifesto class is pure CSS layout; the word pull-up + per-char
+       scroll reveal are runtime splits re-runnable after setLang
+       (window.__wbMotionHooks). data-i18n structure untouched. -->
+  <div class="section-head manifesto">
     <div>
       <div class="eyebrow reveal" data-i18n="studio.eyebrow">// La maison et ses produits</div>
       <h2 class="section-title reveal" data-i18n="studio.title">Un studio,<br/><em>deux produits.</em></h2>
@@ -210,7 +250,7 @@
   </div>
 
   <!-- PROXECO -->
-  <div class="panel magenta reveal" style="margin-bottom:24px"><div class="panel-grid">
+  <div class="panel magenta reveal" style="margin-bottom:12px"><div class="panel-grid">
     <div class="panel-copy">
       <div>
         <div class="panel-tag" data-i18n="px.tag">Marketplace · livraison express</div>
@@ -608,6 +648,11 @@
       b.setAttribute('aria-pressed',on?'true':'false');
     });
     if(window.__wbResplitHero) window.__wbResplitHero();
+    // hooks de re-split de la couche motion (manifesto mots/caractères…) :
+    // le swap innerHTML ci-dessus détruit les spans — chaque hook reconstruit
+    // son split sur le NOUVEAU texte. try/catch : un hook cassé ne bloque
+    // jamais le switch de langue.
+    if(window.__wbMotionHooks) window.__wbMotionHooks.forEach(function(f){ try{ f(); }catch(e){} });
   }
   window.setLang=function(lang){
     lang=(lang==='en')?'en':'fr';
@@ -857,6 +902,37 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
     }
   }
 
+  /* ---- SPOTLIGHT BLUEPRINT (Motionsites lithos) — la couche wireframe du
+     hero n'est révélée que dans un cercle doux R≈260 qui SUIT le curseur
+     avec lissage lerp 0.1 en rAF. Implémentation par custom props --sx/--sy
+     dans un mask-image: radial-gradient CSS (zéro canvas/toDataURL par
+     frame). Desktop fine-pointer + !reduced-motion + !MOBILE uniquement ;
+     la boucle rAF s'arrête quand le hero sort du viewport. ---- */
+  var SPOT_MOBILE = matchMedia('(max-width: 899px), (pointer: coarse)').matches;
+  if(!REDUCE && FINE && !SPOT_MOBILE){
+    var spHero=document.querySelector('.hero'), spBp=spHero&&spHero.querySelector('.hero-blueprint');
+    if(spHero && spBp){
+      document.documentElement.classList.add('spotlight-on');
+      var spCX=-9999, spCY=-9999, spX=null, spY=null, spRaf=0, spVis=true;
+      addEventListener('mousemove',function(e){ spCX=e.clientX; spCY=e.clientY; },{passive:true});
+      // souris hors fenêtre → le cercle glisse hors champ (pas de spot figé)
+      document.documentElement.addEventListener('mouseleave',function(){ spCX=-9999; spCY=-9999; });
+      function spLoop(){
+        var r=spHero.getBoundingClientRect();
+        var tx=spCX-r.left, ty=spCY-r.top;
+        if(spX===null){ spX=tx; spY=ty; }
+        spX+=(tx-spX)*.1; spY+=(ty-spY)*.1;      // lerp 0.1 (lithos)
+        spBp.style.setProperty('--sx',spX.toFixed(1)+'px');
+        spBp.style.setProperty('--sy',spY.toFixed(1)+'px');
+        spRaf=requestAnimationFrame(spLoop);
+      }
+      function spStart(){ cancelAnimationFrame(spRaf); if(spVis && !document.hidden) spRaf=requestAnimationFrame(spLoop); }
+      new IntersectionObserver(function(en){ en.forEach(function(e){ spVis=e.isIntersecting; }); spStart(); if(!spVis) cancelAnimationFrame(spRaf); },{rootMargin:'80px'}).observe(spHero);
+      document.addEventListener('visibilitychange',function(){ if(document.hidden) cancelAnimationFrame(spRaf); else spStart(); });
+      spStart();
+    }
+  }
+
   /* ---- Scroll progress bar + velocity glow (cheap, always-on unless reduced) ---- */
   if(!REDUCE){
     var bar=document.getElementById('scrollbar'), glow=document.getElementById('veloglow');
@@ -902,25 +978,36 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   function splitChars(el){
     if(!el) return { chars:[], accent:null };
     var chars=[], accent=null;
+    // Deux .char inline-block voisins forment un point de coupure de ligne
+    // VALIDE → sans protection n'importe quel mot peut se briser en plein
+    // milieu (« SOFTWARE THA / T »). On groupe donc les caractères par MOT
+    // dans un wrapper insécable (même remède que le nowrap du .accent), et
+    // les espaces redeviennent des noeuds texte SÉCABLES entre les wrappers
+    // pour rendre au moteur ses points de coupure légitimes.
+    function splitInto(frag, text){
+      var word=null;
+      text.split('').forEach(function(ch){
+        if(ch===' '){ word=null; frag.appendChild(document.createTextNode(' ')); return; }
+        if(!word){
+          word=document.createElement('span'); word.className='word';
+          word.style.display='inline-block'; word.style.whiteSpace='nowrap';
+          frag.appendChild(word);
+        }
+        var c=document.createElement('span'); c.className='char'; c.textContent=ch;
+        word.appendChild(c); chars.push(c);
+      });
+    }
     Array.prototype.slice.call(el.childNodes).forEach(function(node){
-      if(node.nodeType===3){ // text → per-character spans (keep spaces as text)
+      if(node.nodeType===3){ // text → word wrappers of per-character spans
         var frag=document.createDocumentFragment();
-        node.textContent.split('').forEach(function(ch){
-          if(ch===' '){ frag.appendChild(document.createTextNode(' ')); return; }
-          var c=document.createElement('span'); c.className='char'; c.textContent=ch;
-          frag.appendChild(c); chars.push(c);
-        });
+        splitInto(frag, node.textContent);
         el.replaceChild(frag,node);
       } else if(node.nodeType===1){
         if(node.tagName==='BR') return;
         // the accent span: split ITS text into chars too, remember it for the scramble
         if(node.classList && node.classList.contains('accent')){ accent=node; }
         var inner=node.textContent, ifrag=document.createDocumentFragment();
-        inner.split('').forEach(function(ch){
-          if(ch===' '){ ifrag.appendChild(document.createTextNode(' ')); return; }
-          var c=document.createElement('span'); c.className='char'; c.textContent=ch;
-          ifrag.appendChild(c); chars.push(c);
-        });
+        splitInto(ifrag, inner);
         node.textContent=''; node.appendChild(ifrag);
         node.style.display='inline-block';
       }
@@ -1030,17 +1117,30 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   // the copy cascade starts as the last letters weld in
   heroTl.addLabel('copy', wmLetters.length ? wmLetters.length*.14 + .18 : 0);
 
-  if(pill) heroTl.from(pill,{ y:18, opacity:0, duration:.55 }, 'copy');
-  if(chars.length){
-    var chFrom={ y:44, opacity:0, rotateX:-60, duration:.62,
-      stagger:{ each:.028, from:'start' }, ease:'power4.out' };
-    if(!MOBILE) chFrom.filter='blur(12px)';   // blur animé : desktop only
-    heroTl.from(chars,chFrom, 'copy+=.12');
+  /* CASCADE bold-studio (Motionsites) : fade-up y:30→0, 0.8s ease-out,
+     +0.2s par élément — tagline → h1 → sub → CTA → stats VANGUARD → trust.
+     Entrées « blur-rise » lithos sur tagline/sub : blur animé DESKTOP ONLY. */
+  if(pill){
+    var pillFrom={ y:30, opacity:0, duration:.8, ease:'power2.out',
+      onComplete:function(){ gsap.set(pill,{ clearProps:'filter' }); } };
+    if(!MOBILE) pillFrom.filter='blur(8px)';
+    heroTl.from(pill,pillFrom, 'copy');
   }
-  if(sub) heroTl.from(sub,{ y:20, opacity:0, duration:.6 }, '-=.3');
-  if(actions) heroTl.from(actions,{ y:18, opacity:0, duration:.5 }, '-=.35');
-  if(hudCells.length) heroTl.from(hudCells,{ y:24, opacity:0, duration:.5, stagger:.07 }, '-=.3');
-  if(trust) heroTl.from(trust,{ y:14, opacity:0, duration:.5 }, '-=.25');
+  if(chars.length){
+    var chFrom={ y:44, opacity:0, rotateX:-60, duration:.8,
+      stagger:{ each:.026, from:'start' }, ease:'power4.out' };
+    if(!MOBILE) chFrom.filter='blur(12px)';   // blur animé : desktop only
+    heroTl.from(chars,chFrom, 'copy+=.2');
+  }
+  if(sub){
+    var subFrom={ y:30, opacity:0, duration:.8, ease:'power2.out',
+      onComplete:function(){ gsap.set(sub,{ clearProps:'filter' }); } };
+    if(!MOBILE) subFrom.filter='blur(6px)';
+    heroTl.from(sub,subFrom, 'copy+=.4');
+  }
+  if(actions) heroTl.from(actions,{ y:30, opacity:0, duration:.8, ease:'power2.out' }, 'copy+=.6');
+  if(hudCells.length) heroTl.from(hudCells,{ y:30, opacity:0, duration:.8, ease:'power2.out', stagger:.08 }, 'copy+=.8');
+  if(trust) heroTl.from(trust,{ y:20, opacity:0, duration:.6, ease:'power2.out' }, 'copy+=1.05');
   // index each char for the staggered gradient-sweep highlight, then paint it on
   chars.forEach(function(c,i){ c.style.setProperty('--si', i); });
   if(h1) heroTl.add(function(){ h1.classList.add('swept'); }, '-=.2');
@@ -1136,6 +1236,10 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
   });
 
   gsap.utils.toArray('.section-head, .center-head').forEach(function(head){
+    // le MANIFESTO (#studio) a sa propre chorégraphie prisma (pull-up mot à
+    // mot + révélation caractère) — pas de block-wipe dessus, pas de double
+    // animation qui se bat
+    if(head.classList.contains('manifesto')) return;
     var eyebrow=head.querySelector('.eyebrow');
     var title=head.querySelector('.section-title');
     var lede=head.querySelector('.section-lede');
@@ -1190,6 +1294,108 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
     ScrollTrigger.create({ trigger:head, start:'top 82%', once:true, onEnter:play });
   });
 
+  /* ── 2b. MANIFESTO prisma (#studio) — déclaration géante centrée :
+     pull-up MOT à MOT sur le titre (y:20→0, stagger .08, once) + lede en
+     RÉVÉLATION CARACTÈRE PAR CARACTÈRE liée au scroll (opacity .2→1,
+     fenêtre par caractère [p-0.1, p+0.05], scrub — desktop only).
+     ⚠️ i18n : les splits détruisent l'innerHTML des data-i18n au switch de
+     langue → hooks de RE-SPLIT enregistrés dans window.__wbMotionHooks,
+     rappelés en fin d'apply() (même pattern que __wbResplitHero). ── */
+  window.__wbMotionHooks = window.__wbMotionHooks || [];
+  (function(){
+    var manif=document.querySelector('.section-head.manifesto');
+    if(!manif) return;
+    var mEyebrow=manif.querySelector('.eyebrow');
+    var mTitle=manif.querySelector('.section-title');
+    var mLede=manif.querySelector('.section-lede');
+    var mWords=[], mChars=[], mST=null, mPlayed=false;
+
+    // split par MOTS (récursif : préserve <br/> et la structure <em> — le
+    // même markup que le dict EN, donc re-splittable dans les deux langues)
+    function splitWords(el){
+      var out=[];
+      (function walk(node){
+        Array.prototype.slice.call(node.childNodes).forEach(function(ch){
+          if(ch.nodeType===3){
+            var frag=document.createDocumentFragment();
+            ch.textContent.split(/(\s+)/).forEach(function(tok){
+              if(!tok) return;
+              if(/^\s+$/.test(tok)){ frag.appendChild(document.createTextNode(' ')); return; }
+              var w=document.createElement('span'); w.className='mword'; w.textContent=tok;
+              frag.appendChild(w); out.push(w);
+            });
+            node.replaceChild(frag,ch);
+          } else if(ch.nodeType===1 && ch.tagName!=='BR'){ walk(ch); }
+        });
+      })(el);
+      return out;
+    }
+    // split par CARACTÈRES (spans inline, espaces gardées en texte → le
+    // retour à la ligne naturel du paragraphe est intact)
+    function splitLetters(el){
+      var out=[];
+      (function walk(node){
+        Array.prototype.slice.call(node.childNodes).forEach(function(ch){
+          if(ch.nodeType===3){
+            var frag=document.createDocumentFragment();
+            ch.textContent.split('').forEach(function(c){
+              if(/\s/.test(c)){ frag.appendChild(document.createTextNode(c)); return; }
+              var s=document.createElement('span'); s.className='mchar'; s.textContent=c;
+              frag.appendChild(s); out.push(s);
+            });
+            node.replaceChild(frag,ch);
+          } else if(ch.nodeType===1 && ch.tagName!=='BR'){ walk(ch); }
+        });
+      })(el);
+      return out;
+    }
+
+    function build(){
+      if(mTitle){
+        mWords=splitWords(mTitle);
+        // déjà joué (re-split après switch de langue post-scroll) → état final
+        if(mPlayed) gsap.set(mWords,{ clearProps:'transform,opacity' });
+        else gsap.set(mWords,{ y:20, opacity:0 });
+      }
+      if(mLede && !MOBILE){
+        if(mST){ mST.kill(); mST=null; }
+        mChars=splitLetters(mLede);
+        var n=mChars.length;
+        mChars.forEach(function(c){ c.style.opacity='.2'; });
+        mST=ScrollTrigger.create({
+          trigger:mLede, start:'top 85%', end:'bottom 40%', scrub:true,
+          onUpdate:function(self){
+            var p=self.progress;
+            for(var i=0;i<n;i++){
+              var cp=i/n, v=(p-(cp-.1))/.15;      // fenêtre [cp-0.1, cp+0.05]
+              v=v<0?0:(v>1?1:v);
+              mChars[i].style.opacity=(.2+.8*v).toFixed(3);
+            }
+          }
+        });
+        if(mST.update) mST.update();   // état correct immédiat (ex. re-split alors que la section est déjà passée)
+      }
+    }
+    build();
+
+    function play(){
+      if(mPlayed) return; mPlayed=true;
+      if(mEyebrow) gsap.fromTo(mEyebrow,{ y:14, opacity:0 },{ y:0, opacity:1, duration:.45, ease:EASE, immediateRender:false });
+      if(mWords.length){
+        gsap.to(mWords,{ y:0, opacity:1, duration:.7, ease:'power4.out', stagger:.08, overwrite:true,
+          onComplete:function(){ gsap.set(mWords,{ clearProps:'transform,opacity' }); } });
+      }
+      if(mLede && MOBILE){ // mobile : pas de scrub → fade-up one-shot léger
+        gsap.fromTo(mLede,{ y:18, opacity:0 },{ y:0, opacity:1, duration:.55, ease:EASE, immediateRender:false });
+      }
+      // sécurité : jamais un mot coincé invisible (onglet throttlé, tween tué)
+      setTimeout(function(){ if(mWords.length) gsap.set(mWords,{ clearProps:'transform,opacity' }); },2800);
+    }
+    ScrollTrigger.create({ trigger:manif, start:'top 80%', once:true, onEnter:play });
+
+    window.__wbMotionHooks.push(build);
+  })();
+
   // Batched card/row reveals (y+opacity+slight scale), staggered per group.
   function batchReveal(sel, cfg){
     cfg = cfg || {};
@@ -1197,8 +1403,9 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
       start: cfg.start || 'top 88%',
       once: true,
       onEnter: function(batch){
-        gsap.fromTo(batch,{ y:44, opacity:0, scale:.965 },{ y:0, opacity:1, scale:1, duration:.7, ease:EASE,
-          stagger:{ each:.09, from:'start' }, overwrite:true,
+        // entrée prisma : scale .95 + fade, stagger .15, ease ~cubic-bezier(.22,1,.36,1)
+        gsap.fromTo(batch,{ y:28, opacity:0, scale:.95 },{ y:0, opacity:1, scale:1, duration:.75, ease:'power4.out',
+          stagger:{ each:.15, from:'start' }, overwrite:true,
           onComplete:function(){ gsap.set(batch,{ clearProps:'transform' }); } });
       }
     });
@@ -1228,7 +1435,7 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
 
     // états cachés posés à l'INIT (dans la garde motion) — sinon les
     // sous-éléments flasheraient à l'état final pendant le fondu du panel
-    gsap.set(panel,{ y:54, opacity:0, scale:.97 });
+    gsap.set(panel,{ y:40, opacity:0, scale:.95 });   // entrée prisma : scale .95 + fade
     if(bits.length) gsap.set(bits,{ y:26, opacity:0 });
     if(lines.length) gsap.set(lines,{ transformOrigin:'200px 200px', svgOrigin:'200 200', scale:0, opacity:0 });
     if(dots.length) gsap.set(dots,{ scale:0, transformOrigin:'center' });
@@ -1262,8 +1469,9 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
     start:'top 88%',
     once:true,
     onEnter:function(batch){
-      gsap.fromTo(batch,{ y:48, opacity:0, scale:.95 },{ y:0, opacity:1, scale:1, duration:.7, ease:EASE,
-        stagger:{ each:.1, from:'start' }, overwrite:true,
+      // entrée prisma : scale .95 + fade, stagger .15, ease ~cubic-bezier(.22,1,.36,1)
+      gsap.fromTo(batch,{ y:28, opacity:0, scale:.95 },{ y:0, opacity:1, scale:1, duration:.75, ease:'power4.out',
+        stagger:{ each:.15, from:'start' }, overwrite:true,
         onComplete:function(){ gsap.set(batch,{ clearProps:'transform' }); } });
       batch.forEach(function(card){
         var icon=card.querySelector('.svc-icon');
@@ -1407,7 +1615,7 @@ function spot(c,e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',((
      AJOUTÉS : les têtes de section (eyebrow/titre/lede) désormais animées
      par les timelines de handoff — le sweep les remet visibles si un saut
      brutal court-circuite leur timeline. */
-  var GUARDED = '.svc,.teaser,.value-row,.eco,.eco-card,.step,.panel,.contact-info,.form,.founder,.eyebrow,.section-title,.section-lede';
+  var GUARDED = '.svc,.teaser,.value-row,.eco,.eco-card,.step,.panel,.contact-info,.form,.founder,.eyebrow,.section-title,.section-lede,.mword';
   var ID_MATRIX = 'matrix(1, 0, 0, 1, 0, 0)';
   function failsafeSweep(){
     var vt = -40; // small slack above the top edge

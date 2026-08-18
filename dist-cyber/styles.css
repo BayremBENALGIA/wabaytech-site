@@ -127,24 +127,34 @@ html.gl-on #bgcanvas{opacity:.5}
 .panel h3,.svc h3,.teaser h3,.step h3{text-wrap:balance}
 .section-lede,.panel-desc,.founder .q{text-wrap:pretty}
 
-/* ---- Buttons --------------------------------------------- */
-.btn{display:inline-flex;align-items:center;gap:10px;padding:13px 24px;border-radius:8px;
+/* ---- Buttons — CTA prisma : pilule + cercle-flèche -------- */
+.btn{display:inline-flex;align-items:center;gap:12px;padding:12px 24px;border-radius:999px;
   font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-  cursor:pointer;border:1px solid transparent;transition:transform .2s,box-shadow .25s,background .25s,color .2s;
+  cursor:pointer;border:1px solid transparent;transition:transform .2s,box-shadow .25s,background .25s,color .2s,gap .25s cubic-bezier(.2,.7,.2,1);
   position:relative}
 .btn svg{transition:transform .25s}
 .btn:hover svg{transform:translateX(4px)}
 /* feedback pressé — !important pour gagner sur le transform magnétique inline */
 .btn:active{transform:translateY(0) scale(.97)!important}
+/* pilule prisma : la flèche vit dans un CERCLE sombre ; hover = gap qui
+   s'élargit + cercle scale 1.1. Les data-i18n restent sur leurs spans. */
+.btn-primary,.btn-magenta{padding:8px 8px 8px 24px}
+.btn-primary svg,.btn-magenta svg{width:30px;height:30px;padding:8px;box-sizing:border-box;
+  border-radius:50%;background:#02060c;flex:0 0 auto;
+  transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+.btn-primary:hover svg,.btn-magenta:hover svg{transform:scale(1.1)}
+.btn-primary:hover,.btn-magenta:hover{gap:18px}
 .btn-primary{color:#02060c;
   background-image:linear-gradient(90deg,#37e9ff 0%,#6ad6ff 22%,#b07bff 48%,#ff5fd6 70%,#6ad6ff 88%,#37e9ff 100%);
   background-size:200% auto;animation:rgbflow 4s linear infinite;
   box-shadow:0 0 0 1px rgba(120,160,255,.45),0 8px 30px rgba(120,90,255,.32)}
+.btn-primary svg{stroke:#7ff0ff}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(150,170,255,.65),0 12px 46px rgba(150,90,255,.5)}
 .btn-ghost{background:rgba(255,255,255,.02);color:var(--fg);border-color:var(--line-strong)}
 .btn-ghost:hover{border-color:var(--accent);color:#fff;box-shadow:0 0 24px rgba(25,227,255,.22)}
 .btn-magenta{background:linear-gradient(120deg,var(--magenta),var(--violet));color:#fff;
   box-shadow:0 0 0 1px rgba(255,43,208,.4),0 8px 30px rgba(255,43,208,.28)}
+.btn-magenta svg{stroke:#ff9de9}
 .btn-magenta:hover{transform:translateY(-2px);box-shadow:0 12px 44px rgba(255,43,208,.5)}
 
 /* ---- Navigation — magistral cyber bar --------------------- */
@@ -240,18 +250,60 @@ html.gl-on #bgcanvas{opacity:.5}
 .lang-btn.active{color:#02060c;background:var(--cyan);box-shadow:0 0 14px rgba(25,227,255,.4)}
 .lang-sep{color:var(--fg-soft);font-family:var(--mono);font-size:10px;opacity:.45}
 
-/* ---- Hero ------------------------------------------------ */
-.hero{min-height:100vh;display:flex;align-items:center;position:relative;
-  padding:120px var(--pad) 80px;overflow:hidden}
+/* ---- Hero — prisma inset frame + bold-studio scale -------- */
+/* CADRE INSET prisma : le hero vit dans un plateau arrondi ~2rem avec
+   padding externe (marge), bord fin et overflow hidden. */
+.hero{min-height:calc(100vh - clamp(10px,1.6vw,22px));display:flex;align-items:center;position:relative;
+  margin:clamp(10px,1.6vw,22px) clamp(10px,1.6vw,22px) 0;
+  border-radius:clamp(20px,2.4vw,34px);border:1px solid var(--line-strong);
+  padding:120px var(--pad) 80px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(7,11,20,.42),rgba(4,6,12,.15) 40%,rgba(7,11,20,.5))}
+/* fond hero dédié — Ken Burns au load (scale 1.06→1, 1.8s, one-shot,
+   transform-only). Coupé par le bloc PERF MOBILE. */
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 82% 18%,rgba(255,43,208,.10),transparent 62%),
+    radial-gradient(820px 560px at 12% 30%,rgba(25,227,255,.12),transparent 58%),
+    radial-gradient(700px 700px at 50% 110%,rgba(164,91,255,.12),transparent 62%);
+  animation:heroKen 1.8s cubic-bezier(.16,1,.3,1) both;will-change:transform}
+@keyframes heroKen{from{transform:scale(1.06)}to{transform:scale(1)}}
+/* ── BLUEPRINT LAYER (spotlight lithos) — grille wireframe cyan + annotations
+   mono + tracés circuit, révélés UNIQUEMENT dans le cercle doux R≈260 qui
+   suit le curseur : mask-image radial-gradient sur --sx/--sy (lerp rAF JS).
+   Cachée par défaut ; html.spotlight-on (desktop fine-pointer, !reduced,
+   !mobile) l'allume. Sous le robot (z0 < z1) et sous la copy (z2). ── */
+.hero-blueprint{display:none;position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  --sx:-9999px;--sy:-9999px}
+html.spotlight-on .hero-blueprint{display:block;
+  -webkit-mask-image:radial-gradient(circle 260px at var(--sx) var(--sy),#000 0 40%,rgba(0,0,0,.75) 60%,rgba(0,0,0,.4) 75%,rgba(0,0,0,.12) 88%,transparent 100%);
+          mask-image:radial-gradient(circle 260px at var(--sx) var(--sy),#000 0 40%,rgba(0,0,0,.75) 60%,rgba(0,0,0,.4) 75%,rgba(0,0,0,.12) 88%,transparent 100%);
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+/* grille wireframe : maille 46px + sous-maille fine, tout en CSS */
+.hero-blueprint::before{content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(25,227,255,.34) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(25,227,255,.34) 1px,transparent 1px),
+    linear-gradient(rgba(25,227,255,.12) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(25,227,255,.12) 1px,transparent 1px);
+  background-size:230px 230px,230px 230px,46px 46px,46px 46px}
+.hero-blueprint .bp-circuit{position:absolute;inset:0;width:100%;height:100%}
+.hero-blueprint .bp-note{position:absolute;font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(25,227,255,.85);text-shadow:0 0 12px rgba(25,227,255,.5);white-space:nowrap}
+.hero-blueprint .bp-reticle{position:absolute;width:56px;height:56px;border:1px solid rgba(25,227,255,.55);border-radius:50%}
+.hero-blueprint .bp-reticle::before,.hero-blueprint .bp-reticle::after{content:"";position:absolute;background:rgba(25,227,255,.55)}
+.hero-blueprint .bp-reticle::before{left:50%;top:-10px;bottom:-10px;width:1px}
+.hero-blueprint .bp-reticle::after{top:50%;left:-10px;right:-10px;height:1px}
 .hero-inner{max-width:var(--max);margin:0 auto;width:100%;position:relative;z-index:2}
-.hero-pill{display:inline-flex;align-items:center;gap:10px;padding:7px 14px;border-radius:999px;
-  font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-mute);
-  border:1px solid var(--line-strong);background:rgba(25,227,255,.04);margin-bottom:30px}
+/* tagline bold-studio : plus de bordure pill — icône + texte tracking .3em */
+.hero-pill{display:inline-flex;align-items:center;gap:12px;padding:0;border-radius:0;
+  font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(232,243,251,.7);
+  border:0;background:none;margin-bottom:30px}
 .hero-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--lime);
   box-shadow:0 0 10px var(--lime);animation:pulse 1.8s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.7)}}
+/* h1 colossal bold-studio : clamp(2.8rem,8vw,7rem), leading .92, tracking serré */
 .hero h1{position:relative;font-family:var(--display);font-weight:800;text-transform:uppercase;
-  font-size:clamp(38px,8vw,108px);line-height:.98;letter-spacing:-.02em;color:#fff;margin-bottom:26px}
+  font-size:clamp(2.8rem,8vw,7rem);line-height:.92;letter-spacing:-.02em;color:#fff;margin-bottom:26px}
 /* Pas de sheen pleine-boîte sur le h1 : un ::after en mix-blend screen sur
    toute la boîte éclaire le RECTANGLE vide sous/à droite du texte à chaque
    balayage (« carré bizarre » signalé). Le balayage néon par-caractère
@@ -259,16 +311,19 @@ html.gl-on #bgcanvas{opacity:.5}
 .hero h1 .accent{position:relative;color:var(--cyan);text-shadow:0 0 26px var(--cyan-soft);white-space:nowrap}
 .hero-sub{font-size:clamp(15px,1.7vw,19px);color:var(--fg-mute);max-width:60ch;margin-bottom:38px;font-family:var(--sans)}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:60px}
-.hero-hud{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
-  border:1px solid var(--line-strong);border-radius:12px;overflow:hidden;
-  background:var(--line-strong);max-width:760px}
-.hero-hud .cell{background:rgba(8,12,22,.7);padding:18px 20px;backdrop-filter:blur(4px);position:relative;transition:background .3s}
-.hero-hud .cell::after{content:"";position:absolute;left:0;top:0;width:0;height:2px;background:linear-gradient(90deg,var(--cyan),transparent);box-shadow:0 0 8px var(--cyan);transition:width .35s cubic-bezier(.2,.7,.2,1)}
-.hero-hud .cell:hover{background:rgba(25,227,255,.05)}
-.hero-hud .cell:hover::after{width:100%}
-.hero-hud .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-soft)}
-.hero-hud .v{font-family:var(--mono);font-size:14px;color:#fff;margin-top:7px;display:flex;align-items:center;gap:9px}
-.hero-hud .v .live{width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
+/* STATS VANGUARD (bold-studio) : plus de grille bordée — valeur ÉNORME
+   Orbitron au-dessus, label minuscule dessous. DOM inchangé (.k puis .v) :
+   column-reverse inverse l'ordre visuel, les data-i18n restent intacts. */
+.hero-hud{display:flex;flex-wrap:wrap;align-items:flex-end;gap:22px clamp(28px,4.2vw,58px);
+  border:0;border-radius:0;overflow:visible;background:none;max-width:760px}
+.hero-hud .cell{background:none;padding:0;backdrop-filter:none;position:relative;
+  display:flex;flex-direction:column-reverse;gap:7px;transition:none}
+.hero-hud .cell::after{content:none}
+.hero-hud .cell:hover{background:none}
+.hero-hud .k{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--fg-soft)}
+.hero-hud .v{font-family:var(--display);font-weight:700;font-size:clamp(22px,2.4vw,36px);
+  letter-spacing:-.02em;line-height:1;color:#fff;margin-top:0;display:flex;align-items:center;gap:10px}
+.hero-hud .v .live{width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime);flex:0 0 auto}
 
 /* hero trust / proof strip */
 .hero-trust{display:flex;align-items:center;flex-wrap:wrap;gap:14px 18px;margin-top:26px;
@@ -305,7 +360,7 @@ html.gl-on #bgcanvas{opacity:.5}
 @keyframes scrollx{to{transform:translateX(-50%)}}
 
 /* ---- Services (bento) ------------------------------------ */
-.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} /* bento prisma resserré */
 .svc{position:relative;padding:30px 28px;border-radius:var(--radius);
   background:linear-gradient(180deg,var(--panel),var(--panel-2));
   border:1px solid var(--line-strong);overflow:hidden;
@@ -452,14 +507,28 @@ a.contact-item:hover{transform:translateX(6px)}
   .nav-links.open{transform:none;visibility:visible}
   /* la barre (logo, FR/EN, burger→X) reste AU-DESSUS du drawer plein écran */
   .nav-logo,.nav-hamburger,.lang-switch{position:relative;z-index:56}
-  /* generous tap targets on the mobile menu (>=44px) */
-  .nav-links a{padding:13px 0;font-size:15px;width:100%}
+  /* MENU bold-studio : liens GÉANTS Orbitron, stagger d'entrée 80ms/item
+     (+100ms de base) via transition-delay — fermés = fondus/décalés.
+     Tap targets largement ≥44px (typo géante + padding). */
+  .nav-links a{padding:10px 0;width:100%;
+    font-family:var(--display);font-weight:700;font-size:clamp(30px,9vw,46px);
+    letter-spacing:.04em;line-height:1.1;color:#fff;text-transform:uppercase;
+    opacity:0;transform:translateY(20px);
+    transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1),color .2s}
+  .nav-links.open a{opacity:1;transform:none}
+  .nav-links.open a:nth-child(1){transition-delay:.10s}
+  .nav-links.open a:nth-child(2){transition-delay:.18s}
+  .nav-links.open a:nth-child(3){transition-delay:.26s}
+  .nav-links.open a:nth-child(4){transition-delay:.34s}
+  .nav-links.open a:nth-child(5){transition-delay:.42s}
+  /* fermeture : retour immédiat, pas de traîne */
+  .nav-links:not(.open) a{transition-delay:0s}
   .nav-cta{display:none}
   /* mobile bar : logo à gauche, [FR/EN][burger] collés à droite */
   .lang-switch{order:2;margin-left:auto}
   .nav-hamburger{order:3}
   .nav-inner{gap:12px}
-  .hero-hud{grid-template-columns:1fr 1fr}
+  .hero-hud{gap:18px 30px}         /* stats VANGUARD : flex resserré (ex-grille) */
   .footer-top{grid-template-columns:1fr 1fr}
 }
 @media(max-width:560px){
@@ -497,7 +566,9 @@ a.contact-item:hover{transform:translateX(6px)}
 /* ---- Reduced motion -------------------------------------- */
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  /* pseudo-elements inclus : sans *::before/::after, les animations de pseudos
+     (ex. blink du .eyebrow::after) continuaient sous reduced-motion */
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   .gridfloor::before,.marquee-track{animation:none}
   .reveal{opacity:1;transform:none}
   /* hide new decorative motion so nothing freezes mid-sweep */
@@ -514,8 +585,31 @@ a.contact-item:hover{transform:translateX(6px)}
 .center-head .eyebrow{justify-content:center}
 .center-head .section-lede{max-width:none;margin:16px auto 0}
 
+/* ── MANIFESTO prisma (#studio) — déclaration géante centrée. Layout pur
+   CSS (no-JS/reduced la lisent statique) ; les splits mots/caractères sont
+   posés par la couche GSAP et re-splittés après setLang (__wbMotionHooks). */
+.section-head.manifesto{display:block;text-align:center;max-width:960px;margin:0 auto clamp(44px,6vw,76px)}
+.section-head.manifesto .eyebrow{justify-content:center}
+.section-head.manifesto .section-title{font-size:clamp(32px,6.4vw,82px);line-height:.92;letter-spacing:-.015em}
+.section-head.manifesto .section-lede{max-width:58ch;margin:26px auto 0;
+  font-size:clamp(16px,1.5vw,19px);line-height:1.65;color:var(--fg-mute)}
+/* mots du pull-up : inline-block pour le translate ; les espaces restent des
+   nœuds texte → le retour à la ligne naturel est intact */
+.mword{display:inline-block;will-change:transform,opacity}
+/* background-clip:text ne traverse pas la frontière inline-block : une fois
+   le <em> splitté en .mword, le dégradé doit être porté PAR CHAQUE MOT,
+   sinon la ligne accent devient invisible (fill transparent sans clip) */
+.section-title em .mword{color:transparent;
+  background-image:linear-gradient(90deg,#19e3ff 0%,#5ad9ff 17%,#a45bff 34%,#ff2bd0 50%,#a45bff 66%,#5ad9ff 83%,#19e3ff 100%);
+  background-size:200% auto;background-repeat:repeat;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:rgbflow 4s linear infinite}
+@supports not ((-webkit-background-clip:text) or (background-clip:text)){
+  .section-title em .mword{background:none;-webkit-text-fill-color:var(--cyan);color:var(--cyan);animation:none}
+}
+
 /* product teaser cards */
-.teaser-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.teaser-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} /* bento prisma resserré */
 .teaser{position:relative;padding:32px 28px;border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line-strong);overflow:hidden;transition:transform .3s,border-color .3s,box-shadow .3s;--sc:var(--cyan);display:flex;flex-direction:column}
 .teaser::before{content:"";position:absolute;inset:0;background:radial-gradient(380px circle at 50% 0%,color-mix(in srgb,var(--sc) 14%,transparent),transparent 50%);opacity:.6;pointer-events:none;transition:opacity .35s}
 .teaser::after{content:"";position:absolute;left:0;top:0;height:1px;width:100%;transform:scaleX(0);transform-origin:left;
@@ -594,7 +688,7 @@ a.contact-item:hover{transform:translateX(6px)}
   .section-title{font-size:clamp(25px,8.5vw,40px)}
   .nav-logo-text{font-size:15px;letter-spacing:.10em}
   .nav-logo img{height:27px}
-  .hero-pill{font-size:10px;letter-spacing:.08em;padding:6px 12px}
+  .hero-pill{font-size:10px;letter-spacing:.16em;padding:0}
   .panel-copy{padding:30px 22px}
   .panel-visual{min-height:300px}
   .founder{padding:30px 22px}
@@ -749,6 +843,13 @@ html.hscroll-on #ecosysteme.hscroll .hscroll-progress::after{content:"";position
   transform:scaleX(var(--hp,0));background:linear-gradient(90deg,var(--cyan),var(--violet),var(--magenta));
   box-shadow:0 0 12px rgba(25,227,255,.5)}
 
+/* ---- Noise overlay (prisma) — grain SVG feTurbulence discret, statique,
+   mix-blend overlay. Desktop only : coupé par le bloc PERF MOBILE et par
+   reduced-motion. Sous le curseur custom (9998) et l'intro (9999). ------- */
+.noise{position:fixed;inset:0;z-index:9990;pointer-events:none;opacity:.055;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:280px 280px}
+
 /* ---- Velocity glow — a page-wide reactive neon skin ------ */
 #veloglow{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;
   background:radial-gradient(1000px 700px at 50% 50%,rgba(25,227,255,.10),transparent 62%);
@@ -761,7 +862,8 @@ html.hscroll-on #ecosysteme.hscroll .hscroll-progress::after{content:"";position
 
 /* Reduced-motion / no-JS hard reset for everything above */
 @media(prefers-reduced-motion:reduce){
-  .cursor-dot,.cursor-ring,#veloglow,#scrollbar{display:none!important}
+  .cursor-dot,.cursor-ring,#veloglow,#scrollbar,.noise,.hero-blueprint{display:none!important}
+  .hero-bg{animation:none}
   html.gsap-on .hero h1.swept .char{animation:none;-webkit-text-fill-color:#e8f3fb;background:none}
   html.gsap-on .hero h1.swept .accent .char{-webkit-text-fill-color:var(--cyan)}
   /* nav: keep the magistral styles, drop the motion — solid white wordmark */
@@ -833,11 +935,16 @@ html.hscroll-on #ecosysteme.hscroll .hscroll-progress::after{content:"";position
    Below 1100px nothing changes (the robot is desktop-only anyway). */
 @media(min-width:1100px){
   .hero{padding-top:clamp(84px,10vh,104px);padding-bottom:clamp(36px,5vh,56px)}
-  .hero-copy{max-width:57%}
-  .hero h1{font-size:clamp(38px,4.8vw,68px);margin-bottom:22px}
+  .hero-copy{max-width:59%}
+  /* colossal, mais borné pour que « DU LOGICIEL QUI » tienne sur sa ligne
+     dans la colonne 59% à côté du robot (vérifié au rendu) */
+  .hero h1{font-size:clamp(40px,5.1vw,76px);line-height:.92;margin-bottom:22px}
   .hero-sub{max-width:52ch;margin-bottom:26px}
   .hero-actions{margin-bottom:clamp(22px,4vh,40px)}
   .hero-pill{margin-bottom:clamp(16px,2.6vh,26px)}
+  /* stats VANGUARD sur UNE ligne dans la colonne 59% (à côté du robot) */
+  .hero-hud{gap:18px clamp(20px,2.4vw,36px)}
+  .hero-hud .v{font-size:clamp(19px,1.75vw,26px)}
   .hero-wordmark{margin-bottom:clamp(20px,3.5vh,36px)}
   /* (le mask 18% du pane robot vit désormais dans le bloc spline-on ≥1100px) */
 }
@@ -887,6 +994,11 @@ html.hscroll-on #ecosysteme.hscroll .hscroll-progress::after{content:"";position
    animations infinies décoratives, couches fixes plein écran.
    ============================================================ */
 @media (max-width:899px),(pointer:coarse){
+  /* motionsites : grain, blueprint spotlight et Ken Burns = desktop only
+     (symétrie avec les gardes JS SPOT_MOBILE / MOBILE) */
+  .noise{display:none}
+  .hero-blueprint{display:none!important}
+  .hero-bg{animation:none}
   /* overdraw : couches fixes plein écran retirées / allégées */
   .scanlines{display:none}
   .vignette{background:radial-gradient(120% 90% at 50% 40%,transparent 62%,rgba(2,4,9,.55) 100%)}
@@ -926,7 +1038,8 @@ html.hscroll-on #ecosysteme.hscroll .hscroll-progress::after{content:"";position
    trous. + planchers de lisibilité (corps ≥15px).
    ============================================================ */
 @media(max-width:899px){
-  .hero{min-height:100vh;min-height:100svh;padding:96px var(--pad) 48px}
+  /* cadre inset : la marge du plateau est déduite pour rester ~1 viewport */
+  .hero{min-height:calc(100vh - 12px);min-height:calc(100svh - 12px);padding:96px var(--pad) 48px}
   .hero-wordmark{margin-bottom:18px}
   .hero-pill{margin-bottom:20px}
   .hero h1{margin-bottom:18px}
