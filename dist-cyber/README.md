@@ -43,8 +43,10 @@ commit is what ships.
   three-phone demo, the VECTOR console, the launch trajectory. No framework, no GSAP.
 - `vendor/lenis.min.js` — smooth scroll (MIT), self-hosted; optional at runtime.
 - The hero robot is a Spline scene loaded lazily from `prod.spline.design` on wide
-  fine-pointer screens only. **Do not widen its pane past ~690 px**: the scene re-frames
-  (zooms in on the head) above that — see the comment on `.hero-3d` in `styles.css`.
+  fine-pointer screens only. Its pane keeps the old site's geometry (measured in
+  production: same full-body framing at 684–760 px wide). **Wait ~12 s before judging the
+  framing**: the scene plays an entrance where the robot starts as a close-up — a screenshot
+  taken too early shows a giant head. See the comment on `.hero-3d` in `styles.css`.
 - `intro-bg.mp4` / `.webm` / `intro-poster.jpg` are legacy (old video intro) and no
   longer referenced; safe to delete once this version is confirmed in production.
 

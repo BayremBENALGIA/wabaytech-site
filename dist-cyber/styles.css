@@ -144,8 +144,14 @@ section[id]{scroll-margin-top:84px}
 .hero-grid{position:absolute;left:-25%;right:-25%;bottom:-4%;height:44%;z-index:-4;opacity:.5;background-image:linear-gradient(rgba(25,227,255,.26) 1px,transparent 1px),linear-gradient(90deg,rgba(25,227,255,.26) 1px,transparent 1px);background-size:68px 68px;transform:perspective(520px) rotateX(63deg);transform-origin:50% 100%;-webkit-mask-image:linear-gradient(to top,#000 4%,transparent 84%);mask-image:linear-gradient(to top,#000 4%,transparent 84%)}
 .motion .hero-grid{animation:gridmove 4.5s linear infinite}
 @keyframes gridmove{to{background-position:0 68px,0 0}}
-/* Géométrie du panneau à ne pas élargir : la scène Spline recadre (zoome)
-   dès que son canvas dépasse ~700 px de large — vérifié à l'écran. */
+/* Géométrie du panneau robot — reprise de l'ancien site, connue pour cadrer le
+   robot en pied. Mesuré en production : cadrage identique à 684, 690, 720 et
+   760 px de large (hauteur 747 px).
+   ATTENTION avant de conclure à un mauvais cadrage : la scène Spline joue une
+   ENTRÉE où le robot arrive en gros plan pendant les ~10 premières secondes.
+   Une capture prise trop tôt montre une tête énorme — ce n'est pas un défaut
+   de taille (c'est l'erreur de diagnostic faite pendant la refonte). Seul cas
+   non re-testé une fois l'entrée terminée : un panneau pleine hauteur. */
 .hero-3d{display:none;position:absolute;right:max(0px,calc((100vw - var(--maxw) - 2*var(--pad))/2 - 48px));top:clamp(112px,17vh,172px);bottom:0;width:min(48%,690px);z-index:-3;opacity:0;pointer-events:none;transition:opacity 1.6s ease;transform:translate3d(0,calc(var(--hp,0)*70px),0)}
 .spline-on .hero-3d{display:block}
 .hero-3d.live{opacity:1}
