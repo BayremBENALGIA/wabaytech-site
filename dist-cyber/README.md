@@ -24,15 +24,29 @@ commit is what ships.
    `proxeco-wordmark-hd.png`, …). Keep new assets inside `dist-cyber/`.
 3. Commit. No build is required or run on deploy.
 
-## Brand (cyberpunk neon — do not drift)
+## Brand (« Orbital », nov. 2026)
 
 - Background `#04060c` (near-black); panels `#0a0f1c` / `#0c1322`.
 - Accents: cyan `#19e3ff`, magenta `#ff2bd0`, violet `#a45bff` (plus lime `#52ff9e`,
-  amber `#ffb454`).
-- Text `#e8f3fb` / muted `#9fb2c4`.
-- Display font **Orbitron**; sans **Geist**; mono **JetBrains Mono**.
-- Default theme dark (`data-theme="dark"`); a light variant exists.
-- No emojis in the UI.
+  amber `#ffb454`). Used with restraint: one gradient word per heading, never all of it.
+- Text `#eaf4fb` / muted `#9fb2c4`.
+- Display font **Unbounded** (sentence case — replaced Orbitron all-caps in Nov. 2026);
+  sans **Geist**; mono **JetBrains Mono**; dot-matrix numerals **Doto**.
+- Dark only. No emojis in the UI.
+
+## Files
+
+- `index.html` — markup + French copy (the DOM is the FR source of truth).
+- `styles.css` — everything visual; hidden "before animation" states exist **only**
+  under `html.motion`, so no-JS and reduced-motion visitors always see the content.
+- `app.js` — i18n (EN dictionary), scroll tracking, WebGL aurora, the PROXECO
+  three-phone demo, the VECTOR console, the launch trajectory. No framework, no GSAP.
+- `vendor/lenis.min.js` — smooth scroll (MIT), self-hosted; optional at runtime.
+- The hero robot is a Spline scene loaded lazily from `prod.spline.design` on wide
+  fine-pointer screens only. **Do not widen its pane past ~690 px**: the scene re-frames
+  (zooms in on the head) above that — see the comment on `.hero-3d` in `styles.css`.
+- `intro-bg.mp4` / `.webm` / `intro-poster.jpg` are legacy (old video intro) and no
+  longer referenced; safe to delete once this version is confirmed in production.
 
 ## Relationship to the repo root
 
